@@ -132,16 +132,16 @@ export default function DailyCheckIn({ entries, onSave }) {
       <div className="p-6">
         <div className="text-center py-10">
           <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">✅</span>
+            <span className="text-3xl" aria-hidden="true">✅</span>
           </div>
           <h2 className="text-base font-semibold text-gray-800 mb-1">Saisie du jour enregistrée</h2>
           <p className="text-gray-500 text-sm capitalize">{dateDisplay}</p>
-          <p className="text-gray-400 text-xs mt-1 mb-5 font-mono">
+          <p className="text-gray-500 text-xs mt-1 mb-5 font-mono">
             Heure d'enregistrement : {existingEntry.timeLogged ?? '—'}
           </p>
 
           {justSaved && (
-            <div className="mb-4 bg-green-50 border border-green-200 text-green-700 rounded-xl py-2.5 px-4 text-sm inline-block">
+            <div role="status" className="mb-4 bg-green-50 border border-green-200 text-green-700 rounded-xl py-2.5 px-4 text-sm inline-block">
               ✓ Sauvegardé avec succès !
             </div>
           )}
@@ -167,7 +167,7 @@ export default function DailyCheckIn({ entries, onSave }) {
       {/* Date header */}
       <div className="mb-7 pb-4 border-b border-gray-100">
         <h2 className="text-base font-semibold text-gray-800 capitalize">{dateDisplay}</h2>
-        <p className="text-xs text-gray-400 mt-0.5">Saisie quotidienne · environ 3 minutes</p>
+        <p className="text-xs text-gray-500 mt-0.5">Saisie quotidienne · environ 3 minutes</p>
       </div>
 
       {/* ── Section 1: Time taken ── */}
@@ -179,9 +179,10 @@ export default function DailyCheckIn({ entries, onSave }) {
             value={form.timeTaken}
             onChange={e => setForm(f => ({ ...f, timeTaken: e.target.value }))}
             required
+            aria-label="Heure de prise du médicament"
             className="w-full px-4 py-3 border border-gray-200 rounded-xl font-mono text-xl focus:outline-none focus:ring-2 focus:ring-vert focus:border-transparent transition-shadow"
           />
-          <p className="text-xs text-gray-400 mt-1.5">
+          <p className="text-xs text-gray-500 mt-1.5">
             Heure à laquelle vous avez pris votre médicament ce matin
           </p>
         </div>
@@ -265,16 +266,17 @@ export default function DailyCheckIn({ entries, onSave }) {
                 <div className="px-4 pb-3 bg-orange-50 border-t border-orange-100">
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-xs text-gray-500 flex-shrink-0">Sévérité :</span>
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1.5" role="group" aria-label={`Sévérité : ${se.label}`}>
                       {SEVERITY_OPTIONS.map(sev => (
                         <button
                           key={sev}
                           type="button"
+                          aria-pressed={form.sideEffectSeverity[se.key] === sev}
                           onClick={() => setSeverity(se.key, sev)}
                           className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                             form.sideEffectSeverity[se.key] === sev
                               ? 'bg-orange-500 text-white border-orange-500'
-                              : 'border-orange-300 text-orange-600 hover:bg-orange-100'
+                              : 'border-orange-400 text-orange-700 hover:bg-orange-100'
                           }`}
                         >
                           {sev}
@@ -297,9 +299,10 @@ export default function DailyCheckIn({ entries, onSave }) {
           onChange={e => setForm(f => ({ ...f, notes: e.target.value.slice(0, 500) }))}
           placeholder="Quoi d'autre aujourd'hui ? (stress, qualité du sommeil, observations…)"
           rows={3}
+          aria-label="Notes libres"
           className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-vert focus:border-transparent transition-shadow"
         />
-        <div className="text-right text-xs text-gray-300 mt-1 font-mono">
+        <div className="text-right text-xs text-gray-500 mt-1 font-mono">
           {form.notes.length}/500
         </div>
       </section>
@@ -318,7 +321,7 @@ export default function DailyCheckIn({ entries, onSave }) {
 function SectionTitle({ icon, label }) {
   return (
     <h3 className="flex items-center gap-2 text-xs font-bold text-vert uppercase tracking-widest mb-4">
-      <span>{icon}</span>
+      <span aria-hidden="true">{icon}</span>
       <span>{label}</span>
     </h3>
   )

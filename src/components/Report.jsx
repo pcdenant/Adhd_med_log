@@ -35,7 +35,7 @@ function wearOffColor(avg) {
 }
 
 function heatClass(norm) {
-  if (norm == null) return 'bg-gray-100 text-gray-400'
+  if (norm == null) return 'bg-gray-100 text-gray-500'
   if (norm >= 0.65) return 'bg-green-100 text-green-800'
   if (norm >= 0.35) return 'bg-yellow-100 text-yellow-800'
   return 'bg-red-100 text-red-800'
@@ -97,7 +97,7 @@ function WearOffSection({ entries }) {
           <div key={d.label} className="flex items-center justify-between text-xs">
             <span className="font-mono text-gray-500 w-14">{d.label}</span>
             <span className="flex-1 mx-2">{labelFor(d.avgWearOff)}</span>
-            <span className="text-gray-400">{d.total} obs.</span>
+            <span className="text-gray-500">{d.total} obs.</span>
           </div>
         ))}
       </div>
@@ -282,7 +282,7 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
     <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200 space-y-5">
       {/* Header */}
       <div className="border-b border-gray-200 pb-4">
-        <p className="text-xs uppercase tracking-widest text-gray-400 mb-1">
+        <p className="text-xs uppercase tracking-widest text-gray-500 mb-1">
           Bilan de maintenance médicamenteuse
         </p>
         <p className="font-mono font-bold text-gray-800 text-sm">
@@ -310,7 +310,7 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
                 : " Durée standard."}
             </p>
           ) : (
-            <p className="italic text-gray-400">
+            <p className="italic text-gray-500">
               Données insuffisantes pour calculer la durée d'efficacité.
             </p>
           )
@@ -426,7 +426,7 @@ function NarrativeBlock({ color, title, content }) {
 
 function EmptyState({ text }) {
   return (
-    <p className="text-gray-400 text-sm italic text-center py-4">{text}</p>
+    <p className="text-gray-500 text-sm italic text-center py-4">{text}</p>
   )
 }
 
@@ -449,7 +449,7 @@ export default function Report({ entries, cycle, onReset }) {
       <div className="mb-6 pb-4 border-b border-gray-100 flex items-start justify-between gap-4">
         <div>
           <h2 className="text-base font-semibold text-gray-800">Rapport 2 semaines</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-500 mt-0.5">
             {recent.length} saisie{recent.length !== 1 ? 's' : ''} sur les 14 derniers jours
             {!hasEnough && (
               <span className="text-orange-500">
@@ -460,10 +460,10 @@ export default function Report({ entries, cycle, onReset }) {
         </div>
         {!hasEnough && (
           <div className="text-right flex-shrink-0">
-            <div className="font-mono text-2xl font-bold text-gray-300 leading-none">
+            <div className="font-mono text-2xl font-bold text-gray-500 leading-none">
               {recent.length}<span className="text-base">/10</span>
             </div>
-            <div className="text-xs text-gray-400 mt-0.5">min. requis</div>
+            <div className="text-xs text-gray-500 mt-0.5">min. requis</div>
           </div>
         )}
       </div>
@@ -471,11 +471,11 @@ export default function Report({ entries, cycle, onReset }) {
       {/* Not enough data */}
       {!hasEnough ? (
         <div className="text-center py-12">
-          <div className="text-5xl mb-4">📊</div>
+          <div className="text-5xl mb-4" aria-hidden="true">📊</div>
           <p className="text-gray-600 text-sm mb-1">
             Il faut au moins <strong>10 saisies</strong> sur 14 jours pour générer le rapport.
           </p>
-          <p className="text-gray-400 text-sm mb-6">
+          <p className="text-gray-500 text-sm mb-6">
             Vous en avez <strong className="font-mono">{recent.length}</strong>. Encore{' '}
             <strong>{10 - recent.length}</strong> à faire !
           </p>
@@ -564,7 +564,7 @@ export default function Report({ entries, cycle, onReset }) {
         ) : (
           <button
             onClick={() => setConfirmReset(true)}
-            className="text-xs text-gray-400 hover:text-red-500 transition-colors underline underline-offset-2"
+            className="text-xs text-gray-500 hover:text-red-500 transition-colors underline underline-offset-2"
           >
             Réinitialiser et démarrer un nouveau cycle
           </button>
@@ -583,7 +583,7 @@ function ReportSection({ letter, title, subtitle, children }) {
         </span>
         <h3 className="font-semibold text-gray-800 text-sm">{title}</h3>
       </div>
-      <p className="text-xs text-gray-400 mb-4">{subtitle}</p>
+      <p className="text-xs text-gray-500 mb-4">{subtitle}</p>
       {children}
     </section>
   )

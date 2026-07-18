@@ -75,11 +75,12 @@ export default function App() {
     <div className="min-h-screen bg-creme">
       <Header cycle={cycle} entries={entries} onUpdateCycle={updateCycle} />
 
-      <div className="max-w-2xl mx-auto px-4 pb-12">
+      <main className="max-w-2xl mx-auto px-4 pb-12">
         {/* Tab bar */}
         <div className="flex rounded-b-xl overflow-hidden shadow-sm border border-t-0 border-gray-200 bg-white mb-0">
           <button
             onClick={() => setActiveTab('checkin')}
+            aria-pressed={activeTab === 'checkin'}
             className={`flex-1 py-3 text-sm font-medium transition-colors ${
               activeTab === 'checkin'
                 ? 'bg-vert text-white'
@@ -90,6 +91,7 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveTab('report')}
+            aria-pressed={activeTab === 'report'}
             className={`flex-1 py-3 text-sm font-medium transition-colors ${
               activeTab === 'report'
                 ? 'bg-vert text-white'
@@ -109,7 +111,7 @@ export default function App() {
             <Report entries={entries} cycle={cycle} onReset={resetCycle} />
           )}
         </div>
-      </div>
+      </main>
     </div>
   )
 }
