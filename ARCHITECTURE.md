@@ -16,7 +16,11 @@ For product intent and roadmap, see [`PRODUCT.md`](./PRODUCT.md). This file cove
 ```
 App.jsx (owns all state: { cycle, entries })
   │
-  ├─ loadData() / persistData()  — localStorage["ammt_v2"], read once on mount, written on every mutation
+  ├─ readStoredData() / persistData()  — localStorage["ammt_v2"], read once on mount, written on
+  │    every mutation via persist(). Both are guarded: an unparsable/wrong-shape stored value sets
+  │    loadError (renders UnreadableDataScreen instead of onboarding/tracker, and never auto-clears
+  │    the key); a failed write sets saveError (renders a dismissible SaveErrorBanner) but still
+  │    keeps the in-memory change — no rollback, no export, just an honest warning.
   │
   ├─ Onboarding.jsx     — shown when cycle is null; collects medicationName + dosage, calls setupCycle()
   │
@@ -65,5 +69,4 @@ The [impeccable](https://github.com/pbakaus/impeccable) Claude Code skill is ven
 ## Known architectural debt
 
 - **Date navigation** is handled by `DayStrip.jsx` + a `selectedDate` state in `DailyCheckIn.jsx`; `buildDayWindow` (in `calculations.js`) computes the selectable 14-day window, and `saveEntry` dedupes by `entry.date` so any selected day is logged/edited in place.
-- **No error boundaries, no `localStorage` error handling.** `loadData()`'s `catch (_) {}` and `persistData()`'s unguarded `setItem` mean any read/write failure is invisible to the user.
-- **No accessibility semantics.** Zero `aria-`/`role` attributes in `src/`; three form inputs (time, notes, header edit fields) have no `<label>`.
+- No error boundaries (still true — a render-time crash anywhere in the tree takes down the whole app; `localStorage` read/write failures specifically are now handled, see Data flow above).

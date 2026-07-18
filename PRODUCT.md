@@ -127,7 +127,7 @@ An `/impeccable audit` and `/impeccable critique` pass (July 2026) surfaced real
 **Near-term (found by audit/critique, not in original PRD):**
 - ~~**[P0]** No way to log or edit a day other than today~~ — **shipped**: the 14-day `DayStrip` lets the user backfill/edit any day in the report window.
 - ~~**[P1]** Daily check-in is a monolithic, undivided scroll~~ — **shipped**: the daily form is now an auto-advancing accordion (one section open at a time; time → dimensions → wear-off advance automatically once complete, side effects/notes stay optional). See `ARCHITECTURE.md` → Component notes.
-- **[P1]** Silent data loss: `loadData()` swallows parse errors with a bare `catch`, so corrupted/blocked `localStorage` reads as "new user" with zero warning; no export-before-reset offramp
+- ~~**[P1]** Silent data loss~~ — **shipped**: unreadable stored data now shows a dedicated screen instead of silently reading as "new user" (and never auto-clears — only an explicit, confirmed action does); a failed write shows a dismissible warning banner instead of vanishing. Still intentionally no export — that stays out of scope per the section above.
 - ~~**[P2]** Zero accessibility semantics (`aria-`/`role`) anywhere in the code~~ — **shipped**: `role="group"`/`aria-pressed` on the Likert scale and severity pills, accessible names on all form inputs, landmarks, `aria-hidden` on decorative emoji.
 - ~~**[P2]** ~17 instances of sub-AA gray-on-white text; inconsistent status-color logic~~ — **shipped**: muted text moved to `gray-500`+, inactive Likert colors darkened. (The duplicated status-color logic across `Report.jsx`/`LikertScale.jsx` itself is still open — see `ARCHITECTURE.md`.)
 
