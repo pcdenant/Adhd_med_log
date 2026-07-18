@@ -8,7 +8,8 @@ For product intent and roadmap, see [`PRODUCT.md`](./PRODUCT.md). This file cove
 - **Vite 5** for dev server and build
 - **Tailwind CSS 3** for styling, custom brand tokens in `tailwind.config.js`
 - **Recharts 2** for the report's bar charts
-- No backend, no database, no test runner, no linter
+- No backend, no database, no linter
+- **Vitest** + React Testing Library + jsdom (unit/component/integration/a11y) and **Playwright** (E2E) — see [`TESTING.md`](./TESTING.md)
 
 ## Data flow
 

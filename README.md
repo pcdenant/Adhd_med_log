@@ -4,11 +4,11 @@ A local-only web app for tracking how well an established ADHD medication is wor
 
 One daily check-in (under 3 minutes), a 2-week report with wear-off timeline, executive-function dimension scores, a day-of-week difficulty pattern, side-effect frequency, and an auto-generated narrative summary. Everything lives in the browser's `localStorage` — no account, no cloud, no backend.
 
-See [`PRODUCT.md`](./PRODUCT.md) for the full product spec and roadmap, [`ARCHITECTURE.md`](./ARCHITECTURE.md) for how the code is put together, [`CLAUDE.md`](./CLAUDE.md) for agent working rules on this repo, and [`CHANGELOG.md`](./CHANGELOG.md) for the PR-by-PR history.
+See [`PRODUCT.md`](./PRODUCT.md) for the full product spec and roadmap, [`ARCHITECTURE.md`](./ARCHITECTURE.md) for how the code is put together, [`CLAUDE.md`](./CLAUDE.md) for agent working rules on this repo, [`CHANGELOG.md`](./CHANGELOG.md) for the PR-by-PR history, and [`TESTING.md`](./TESTING.md) for the test strategy.
 
 ## Stack
 
-React 18 + Vite 5 + Tailwind CSS 3 + Recharts 2. No backend, no database — `localStorage` only. No test suite, no linter configured.
+React 18 + Vite 5 + Tailwind CSS 3 + Recharts 2. No backend, no database — `localStorage` only. Tested with Vitest + React Testing Library (unit/component/integration/a11y) and Playwright (E2E) — see [`TESTING.md`](./TESTING.md). No linter configured.
 
 ## Getting started
 
@@ -17,6 +17,9 @@ npm install
 npm run dev       # local dev server
 npm run build     # production build to dist/
 npm run preview   # preview the production build locally
+npm test          # unit + component + integration + a11y (Vitest, fast)
+npm run coverage  # test run with a coverage report
+npm run test:e2e  # end-to-end golden journeys (Playwright)
 ```
 
 ## Deployment

@@ -25,10 +25,11 @@ export default function Onboarding({ onSetup }) {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="onboarding-med" className="block text-sm font-medium text-gray-700 mb-1.5">
               Nom du médicament
             </label>
             <input
+              id="onboarding-med"
               type="text"
               value={medName}
               onChange={e => setMedName(e.target.value)}
@@ -38,10 +39,11 @@ export default function Onboarding({ onSetup }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="onboarding-dosage" className="block text-sm font-medium text-gray-700 mb-1.5">
               Dosage
             </label>
             <input
+              id="onboarding-dosage"
               type="text"
               value={dosage}
               onChange={e => setDosage(e.target.value)}

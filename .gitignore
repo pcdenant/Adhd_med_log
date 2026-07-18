@@ -1,2 +1,9 @@
 node_modules/
 dist/
+
+# Test output
+coverage/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
