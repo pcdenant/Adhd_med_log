@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMMT — Backlog design (audit + critique impeccable)</title>
+<style>
+  :root {
+    --vert: #006946;
+    --vert-dark: #004d34;
+    --vert-light: #e6f2ec;
+    --jaune: #FFF200;
+    --creme: #FBF3EB;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --bg: #FBF3EB;
+    --card: #ffffff;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --amber: #b45309;
+    --amber-bg: #fffbeb;
+    --green: #15803d;
+    --green-bg: #f0fdf4;
+    --blue: #1d4ed8;
+    --blue-bg: #eff6ff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #374151;
+      --bg: #17140f;
+      --card: #211d16;
+      --vert-light: #163227;
+      --red-bg: #2a1414;
+      --amber-bg: #2a2013;
+      --green-bg: #142a1c;
+      --blue-bg: #14202a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'DM Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  header {
+    background: var(--vert);
+    color: white;
+    padding: 2rem 1.5rem 1.5rem;
+  }
+  header .wrap { max-width: 980px; margin: 0 auto; }
+  header h1 { margin: 0 0 0.25rem; font-size: 1.5rem; }
+  header p.sub { margin: 0; color: rgba(255,255,255,0.75); font-size: 0.9rem; }
+  .meta-row {
+    display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.25rem;
+  }
+  .stat {
+    background: rgba(255,255,255,0.12);
+    border-radius: 0.75rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+  .stat strong { display: block; font-size: 1.1rem; font-family: ui-monospace, monospace; }
+  main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+  .callout {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .callout code {
+    background: var(--vert-light);
+    color: var(--vert-dark);
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.3rem;
+    font-size: 0.85em;
+  }
+  @media (prefers-color-scheme: dark) {
+    .callout code { color: #8fd9b8; }
+  }
+  h2 {
+    font-size: 1.05rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--vert);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+    margin: 2rem 0 1rem;
+  }
+  @media (prefers-color-scheme: dark) { h2 { color: #4ade80; } }
+  .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .filters button {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .filters button.active { background: var(--vert); color: white; border-color: var(--vert); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-bottom: 0.5rem; }
+  th, td { text-align: left; padding: 0.65rem 0.6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
+  tr.is-hidden { display: none; }
+  .pri { font-family: ui-monospace, monospace; font-weight: 700; font-size: 0.78rem; padding: 0.1rem 0.4rem; border-radius: 0.3rem; white-space: nowrap; }
+  .pri-P0 { background: var(--red-bg); color: var(--red); }
+  .pri-P1 { background: var(--amber-bg); color: var(--amber); }
+  .pri-P2 { background: var(--blue-bg); color: var(--blue); }
+  .pri-P3 { background: var(--border); color: var(--muted); }
+  .status { font-size: 0.78rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 999px; white-space: nowrap; display: inline-block; }
+  .status-merged { background: var(--green-bg); color: var(--green); }
+  .status-open { background: var(--amber-bg); color: var(--amber); }
+  .status-deferred { background: var(--border); color: var(--muted); }
+  .loc { font-family: ui-monospace, monospace; font-size: 0.8rem; color: var(--muted); }
+  .cmd { font-family: ui-monospace, monospace; font-size: 0.8rem; background: var(--vert-light); color: var(--vert-dark); padding: 0.1rem 0.4rem; border-radius: 0.3rem; white-space: nowrap; }
+  @media (prefers-color-scheme: dark) { .cmd { color: #8fd9b8; } }
+  .source { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  ul.minor { font-size: 0.88rem; padding-left: 1.2rem; }
+  ul.minor li { margin-bottom: 0.5rem; }
+  .badge-inline { font-size: 0.72rem; font-weight: 600; padding: 0.1rem 0.45rem; border-radius: 999px; margin-left: 0.4rem; }
+  .positives { background: var(--green-bg); border: 1px solid var(--green); border-radius: 0.75rem; padding: 1rem 1.25rem; font-size: 0.88rem; }
+  .positives li { margin-bottom: 0.4rem; }
+  footer { max-width: 980px; margin: 0 auto; padding: 1.5rem; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--border); }
+  @media print {
+    .filters { display: none; }
+    tr.is-hidden { display: table-row !important; }
+    header { background: none !important; color: var(--ink) !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Backlog design — AMMT</h1>
+    <p class="sub">Export statique de <code style="background:rgba(255,255,255,.15);color:white">/impeccable audit</code> + <code style="background:rgba(255,255,255,.15);color:white">/impeccable critique</code> (18 juillet 2026), annoté avec le suivi de merge. Sert de point de départ pour choisir les prochains fixes dans une autre session.</p>
+    <div class="meta-row">
+      <div class="stat">Audit (baseline)<strong>13/20</strong></div>
+      <div class="stat">Critique (baseline)<strong>22/40</strong></div>
+      <div class="stat">Items résolus<strong>10/16</strong></div>
+      <div class="stat">Items ouverts<strong>4</strong></div>
+      <div class="stat">Différés (roadmap)<strong>2</strong></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="callout">
+    <strong>Comment utiliser ce fichier :</strong> les scores 13/20 et 22/40 ci-dessus sont le <em>snapshot d'origine</em>, avant tout fix — ils datent d'avant les PR #7, #9, #10, #11. Le tableau plus bas est à jour (statut Merged/Open par item), mais les scores chiffrés eux-mêmes n'ont pas été recalculés. Pour des scores à jour, relancer <code>/impeccable audit</code> et <code>/impeccable critique</code> dans une nouvelle session — ce fichier leur sert justement de mémoire de ce qui a déjà été traité, pour ne pas re-proposer un fix déjà fait.
+  </div>
+
+  <h2>Backlog priorisé (P0 → P3)</h2>
+  <div class="filters">
+    <button data-filter="all" class="active">Tout (16)</button>
+    <button data-filter="open">Ouvert (4)</button>
+    <button data-filter="merged">Mergé (10)</button>
+    <button data-filter="deferred">Différé (2)</button>
+  </div>
+  <table id="backlog-table">
+    <thead>
+      <tr>
+        <th>Pri</th>
+        <th>Statut</th>
+        <th>Constat</th>
+        <th>Localisation</th>
+        <th>Source</th>
+        <th>Commande suggérée</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr data-status="merged">
+        <td><span class="pri pri-P0">P0</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #9</span></td>
+        <td>Aucun moyen de saisir/modifier un jour passé — un jour manqué devenait un trou permanent dans le rapport.</td>
+        <td class="loc">DailyCheckIn.jsx, DayStrip.jsx</td>
+        <td class="source">Critique</td>
+        <td><span class="cmd">/impeccable craft</span></td>
+      </tr>
+      <tr data-status="merged">
+        <td><span class="pri pri-P1">P1</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #10</span></td>
+        <td>Formulaire quotidien monolithique (6+7 décisions d'un bloc) — charge cognitive 4/8 échecs.</td>
+        <td class="loc">DailyCheckIn.jsx</td>
+        <td class="source">Critique</td>
+        <td><span class="cmd">/impeccable craft</span></td>
+      </tr>
+      <tr data-status="merged">
+        <td><span class="pri pri-P1">P1</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #11</span></td>
+        <td>Perte de données silencieuse — parsing/écriture localStorage sans gestion d'erreur.</td>
+        <td class="loc">App.jsx (loadData/persistData)</td>
+        <td class="source">Critique</td>
+        <td><span class="cmd">/impeccable craft</span></td>
+      </tr>
+      <tr data-status="merged">
+        <td><span class="pri pri-P1">P1</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #7</span></td>
+        <td>Champs de formulaire sans label accessible (heure, notes, médicament/dosage).</td>
+        <td class="loc">Header.jsx, DailyCheckIn.jsx, Onboarding.jsx</td>
+        <td class="source">Audit</td>
+        <td><span class="cmd">/impeccable harden</span></td>
+      </tr>
+      <tr data-status="merged">
+        <td><span class="pri pri-P1">P1</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #7</span></td>
+        <td>Texte gris peu contrasté généralisé (17 occurrences de gray-400/300 sur fond blanc).</td>
+        <td class="loc">LikertScale.jsx, DailyCheckIn.jsx, Onboarding.jsx, Report.jsx</td>
+        <td class="source">Audit</td>
+        <td><span class="cmd">/impeccable polish</span></td>
+      </tr>
+      <tr data-status="merged">
+        <td><span class="pri pri-P2">P2</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #7</span></td>
+        <td>Échelle Likert sans sémantique accessible (0 aria/role sur le contrôle le plus répété, 6×/jour).</td>
+        <td class="loc">LikertScale.jsx</td>
+        <td class="source">Audit + Critique</td>
+        <td><span class="cmd">/impeccable harden</span></td>
+      </tr>
+      <tr data-status="merged">
+        <td><span class="pri pri-P2">P2</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #7</span></td>
+        <td>Contraste limite sur les boutons Likert inactifs (ex. red-400 sur red-50).</td>
+        <td class="loc">LikertScale.jsx</td>
+        <td class="source">Audit + Critique</td>
+        <td><span class="cmd">/impeccable polish</span></td>
+      </tr>
+      <tr data-status="merged">
+        <td><span class="pri pri-P2">P2</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #7</span></td>
+        <td>Bouton icône (crayon) sans nom accessible (title seul, pas d'aria-label).</td>
+        <td class="loc">Header.jsx</td>
+        <td class="source">Audit</td>
+        <td><span class="cmd">/impeccable harden</span></td>
+      </tr>
+      <tr data-status="open">
+        <td><span class="pri pri-P2">P2</span></td>
+        <td><span class="status status-open">🔲 Ouvert</span></td>
+        <td>Cibles tactiles sous 44px (pastilles de sévérité, boutons Sauver/Annuler du header en mode édition).</td>
+        <td class="loc">DailyCheckIn.jsx:426, Header.jsx:42,50</td>
+        <td class="source">Audit</td>
+        <td><span class="cmd">/impeccable adapt</span></td>
+      </tr>
+      <tr data-status="open">
+        <td><span class="pri pri-P2">P2</span></td>
+        <td><span class="status status-open">🔲 Ouvert</span></td>
+        <td>Motif "eyebrow" uppercase tracké répété (tell AI identifié dans les bans absolus impeccable) — présent sur les en-têtes d'accordéon, DayStrip, et le narrative du rapport.</td>
+        <td class="loc">DailyCheckIn.jsx:498, DayStrip.jsx:35, Report.jsx:285</td>
+        <td class="source">Audit</td>
+        <td><span class="cmd">/impeccable quieter</span></td>
+      </tr>
+      <tr data-status="open">
+        <td><span class="pri pri-P2">P2</span></td>
+        <td><span class="status status-open">🔲 Ouvert</span></td>
+        <td>Logique de couleur de statut dupliquée (dimColor/wearOffColor/heatClass dans Report.jsx vs. la palette hardcodée de LikertScale.jsx) — même concept, deux systèmes indépendants.</td>
+        <td class="loc">Report.jsx:23-37, LikertScale.jsx:2-28</td>
+        <td class="source">Audit + Critique</td>
+        <td><span class="cmd">/impeccable extract</span></td>
+      </tr>
+      <tr data-status="merged">
+        <td><span class="pri pri-P3">P3</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #7</span></td>
+        <td>Emojis décoratifs non masqués aux lecteurs d'écran (pas d'aria-hidden).</td>
+        <td class="loc">Header.jsx, DailyCheckIn.jsx, Report.jsx</td>
+        <td class="source">Audit</td>
+        <td><span class="cmd">/impeccable harden</span></td>
+      </tr>
+      <tr data-status="merged">
+        <td><span class="pri pri-P3">P3</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #5</span></td>
+        <td>Code mort (css/style.css, seed-data.html, js/app.js, js/stats.js — prototype vanilla-JS pré-PRD, clé localStorage différente).</td>
+        <td class="loc">/css, /js, seed-data.html (supprimés)</td>
+        <td class="source">Audit</td>
+        <td class="loc">nettoyage manuel</td>
+      </tr>
+      <tr data-status="open">
+        <td><span class="pri pri-P3">P3</span></td>
+        <td><span class="status status-open">🔲 Ouvert</span></td>
+        <td>Zéro breakpoint responsive explicite — la heatmap jour-de-semaine (7 colonnes) devient serrée sous ~360px.</td>
+        <td class="loc">Report.jsx:182 (DayOfWeekSection)</td>
+        <td class="source">Audit</td>
+        <td><span class="cmd">/impeccable adapt</span></td>
+      </tr>
+      <tr data-status="deferred">
+        <td><span class="pri pri-P2">P2</span></td>
+        <td><span class="status status-deferred">⏸ Différé (roadmap)</span></td>
+        <td>Aucun export/impression pour un rapport pensé pour être montré au médecin.</td>
+        <td class="loc">Report.jsx</td>
+        <td class="source">Critique</td>
+        <td>Hors scope MVP volontaire — voir PRODUCT.md → Longer-term</td>
+      </tr>
+      <tr data-status="deferred">
+        <td><span class="pri pri-P2">P2</span></td>
+        <td><span class="status status-deferred">⏸ Différé (roadmap)</span></td>
+        <td>Pas d'archive multi-cycles — un reset efface définitivement les données du cycle précédent.</td>
+        <td class="loc">App.jsx (resetCycle)</td>
+        <td class="source">Critique</td>
+        <td>Hors scope MVP volontaire — voir PRODUCT.md → Longer-term</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Observations mineures (non chiffrées, à trier)</h2>
+  <ul class="minor">
+    <li><strong>Libellé d'action incohérent</strong> — "Sauver" (Header.jsx) vs "Enregistrer" (DailyCheckIn.jsx) pour la même action de sauvegarde.</li>
+    <li><strong>Champ heure toujours vide</strong> — pas de pré-remplissage avec l'heure d'hier, petite friction quotidienne évitable.</li>
+    <li><strong>Seuil "10/14" jamais expliqué</strong> — l'utilisateur ne sait pas pourquoi ce chiffre précis débloque le rapport.</li>
+    <li><strong>resetCycle réinitialise aussi silencieusement la date de cycle</strong> — le texte de confirmation ne mentionne que l'effacement des saisies, pas le redémarrage de la date.</li>
+    <li><strong>Emoji comme système d'icônes</strong> — cohérent visuellement mais pas un vrai set d'icônes ; rendu variable selon OS/navigateur. Pas un bug, un choix esthétique à assumer ou remettre en question plus tard.</li>
+  </ul>
+
+  <h2>Ce qui fonctionne bien (à ne pas casser)</h2>
+  <div class="positives">
+    <ul>
+      <li>Modélisation clinique authentique — les 6 dimensions Brown avec ancrages réels, pas du placeholder générique.</li>
+      <li>État "rapport verrouillé" honnête — barre de progression visible plutôt que caché/désactivé.</li>
+      <li>Synthèse narrative auto-générée — traduit les moyennes en check-list actionnable pour le médecin, vraie fonctionnalité pas du remplissage.</li>
+      <li>Système de tokens de marque cohérent (vert/jaune/creme) pour le chrome principal.</li>
+      <li>Radios et checkboxes correctement enveloppés dans <code>&lt;label&gt;</code> — pattern accessible dès l'origine.</li>
+      <li>Sévérité du wear-off communiquée par phrase complète, pas seulement par couleur.</li>
+      <li>Anneaux de focus visibles et personnalisés sur tous les champs, jamais juste supprimés.</li>
+      <li>Les lettres A–E du rapport sont une séquence délibérée et porteuse de sens (structure clinique réelle), pas du scaffolding gratuit.</li>
+    </ul>
+  </div>
+</main>
+
+<footer>
+  Généré le 18 juillet 2026 à partir des rapports <code>/impeccable audit</code> et <code>/impeccable critique</code> menés sur ce dépôt, annoté avec le suivi des PR mergées jusqu'au 18 juillet 2026 (PR #5 à #11). Voir <code>CHANGELOG.md</code> pour l'historique complet des PR et <code>PRODUCT.md</code> → Known Gaps &amp; Roadmap pour la version canonique et évolutive de ce backlog.
+</footer>
+
+<script>
+  const buttons = document.querySelectorAll('.filters button');
+  const rows = document.querySelectorAll('#backlog-table tbody tr');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+      rows.forEach(row => {
+        const status = row.dataset.status;
+        const show = filter === 'all' || status === filter;
+        row.classList.toggle('is-hidden', !show);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
