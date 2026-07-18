@@ -27,13 +27,13 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
   }
 
   return (
-    <div className="bg-vert text-white shadow-md">
+    <header className="bg-vert text-white shadow-md">
       <div className="max-w-2xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
 
           {/* Left: medication info */}
           <div className="flex items-center gap-3 min-w-0">
-            <span className="text-2xl flex-shrink-0">💊</span>
+            <span className="text-2xl flex-shrink-0" aria-hidden="true">💊</span>
             {editing ? (
               <div className="flex items-center gap-2 flex-wrap">
                 <input
@@ -41,6 +41,7 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
                   onChange={e => setMedName(e.target.value)}
                   className="text-gray-900 px-2.5 py-1.5 rounded-lg text-sm w-36 font-medium"
                   placeholder="Médicament"
+                  aria-label="Nom du médicament"
                   autoFocus
                 />
                 <input
@@ -48,6 +49,7 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
                   onChange={e => setDosage(e.target.value)}
                   className="text-gray-900 px-2.5 py-1.5 rounded-lg text-sm w-24 font-mono"
                   placeholder="Dosage"
+                  aria-label="Dosage"
                 />
                 <button
                   onClick={handleSave}
@@ -72,9 +74,10 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
                   <button
                     onClick={() => setEditing(true)}
                     className="text-white/50 hover:text-white text-sm flex-shrink-0 transition-colors"
+                    aria-label="Modifier le médicament et le dosage"
                     title="Modifier"
                   >
-                    ✏️
+                    <span aria-hidden="true">✏️</span>
                   </button>
                 </div>
                 <div className="text-white/60 text-xs mt-0.5">
@@ -102,6 +105,6 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
           )}
         </div>
       </div>
-    </div>
+    </header>
   )
 }

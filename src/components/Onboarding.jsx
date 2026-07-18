@@ -14,7 +14,7 @@ export default function Onboarding({ onSetup }) {
       <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-vert-light rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">💊</span>
+            <span className="text-3xl" aria-hidden="true">💊</span>
           </div>
           <h1 className="text-2xl font-bold text-vert mb-2">Suivi Médicament TDAH</h1>
           <p className="text-gray-500 text-sm leading-relaxed">
@@ -58,7 +58,7 @@ export default function Onboarding({ onSetup }) {
           </button>
         </form>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <p className="text-center text-xs text-gray-500 mt-6">
           Données stockées localement · Aucun cloud · Aucun compte
         </p>
       </div>
