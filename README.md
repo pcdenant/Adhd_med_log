@@ -4,7 +4,7 @@ A local-only web app for tracking how well an established ADHD medication is wor
 
 One daily check-in (under 3 minutes), a 2-week report with wear-off timeline, executive-function dimension scores, a day-of-week difficulty pattern, side-effect frequency, and an auto-generated narrative summary. Everything lives in the browser's `localStorage` — no account, no cloud, no backend.
 
-See [`PRODUCT.md`](./PRODUCT.md) for the full product spec and roadmap, [`ARCHITECTURE.md`](./ARCHITECTURE.md) for how the code is put together, [`CLAUDE.md`](./CLAUDE.md) for agent working rules on this repo, [`CHANGELOG.md`](./CHANGELOG.md) for the PR-by-PR history, and [`TESTING.md`](./TESTING.md) for the test strategy.
+See [`PRODUCT.md`](./PRODUCT.md) for the full product spec and roadmap, [`ARCHITECTURE.md`](./ARCHITECTURE.md) for how the code is put together, [`CLAUDE.md`](./CLAUDE.md) for agent working rules on this repo, [`CHANGELOG.md`](./CHANGELOG.md) for the PR-by-PR history, [`TESTING.md`](./TESTING.md) for the test strategy, and [`backlog.html`](./backlog.html) (open in a browser) for the impeccable audit/critique findings with merge status, for picking the next fix in a future session.
 
 ## Stack
 
