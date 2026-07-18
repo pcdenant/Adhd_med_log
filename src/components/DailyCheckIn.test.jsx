@@ -103,6 +103,16 @@ describe('DailyCheckIn — accordion', () => {
     await userEvent.click(screen.getByRole('button', { name: /Enregistrer la saisie du jour/ }))
     expect(onSave).toHaveBeenCalledTimes(1)
   })
+
+  // AI-tell regression guard: accordion headers no longer use the
+  // uppercase-tracked "eyebrow" pattern — don't let it drift back in.
+  it('accordion headers do not use the uppercase-tracked eyebrow pattern', () => {
+    render(<DailyCheckIn entries={[]} onSave={vi.fn()} />)
+    const header = screen.getByRole('button', { name: /Heure de prise/ })
+    const labelWrap = within(header).getByText('Heure de prise').parentElement
+    expect(labelWrap.className).not.toMatch(/uppercase/)
+    expect(labelWrap.className).not.toMatch(/tracking-widest/)
+  })
 })
 
 describe('DailyCheckIn — missed-day catch-up', () => {

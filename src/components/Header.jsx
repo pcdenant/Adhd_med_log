@@ -39,7 +39,7 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
                 <input
                   value={medName}
                   onChange={e => setMedName(e.target.value)}
-                  className="text-gray-900 px-2.5 py-1.5 rounded-lg text-sm w-36 font-medium"
+                  className="text-gray-900 px-2.5 py-2.5 rounded-lg text-sm w-36 font-medium"
                   placeholder="Médicament"
                   aria-label="Nom du médicament"
                   autoFocus
@@ -47,19 +47,19 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
                 <input
                   value={dosage}
                   onChange={e => setDosage(e.target.value)}
-                  className="text-gray-900 px-2.5 py-1.5 rounded-lg text-sm w-24 font-mono"
+                  className="text-gray-900 px-2.5 py-2.5 rounded-lg text-sm w-24 font-mono"
                   placeholder="Dosage"
                   aria-label="Dosage"
                 />
                 <button
                   onClick={handleSave}
-                  className="bg-jaune text-gray-900 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-yellow-300 transition-colors"
+                  className="bg-jaune text-gray-900 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-yellow-300 transition-colors"
                 >
                   ✓ Sauver
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="text-white/60 hover:text-white px-2 py-1.5 text-xs"
+                  className="text-white/60 hover:text-white px-2 py-2.5 text-xs"
                 >
                   Annuler
                 </button>
@@ -73,7 +73,7 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
                   </span>
                   <button
                     onClick={() => setEditing(true)}
-                    className="text-white/50 hover:text-white text-sm flex-shrink-0 transition-colors"
+                    className="-m-3.5 p-3.5 text-white/50 hover:text-white text-sm flex-shrink-0 transition-colors"
                     aria-label="Modifier le médicament et le dosage"
                     title="Modifier"
                   >

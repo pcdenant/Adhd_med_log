@@ -45,4 +45,17 @@ describe('LikertScale', () => {
     expect(screen.getByRole('button', { name: 'Niveau 4 sur 5' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: 'Niveau 2 sur 5' })).toHaveAttribute('aria-pressed', 'false')
   })
+
+  // Guards the severityColors.js extraction: the colors here are now sourced
+  // from a shared module, but the rendered classes — including the a11y
+  // contrast exceptions on levels 3 and 5 — must stay byte-identical.
+  it('renders the pre-extraction colors, including the a11y contrast exceptions', () => {
+    setup({ value: 3 })
+    const btn3 = screen.getByRole('button', { name: 'Niveau 3 sur 5' })
+    expect(btn3.className).toContain('bg-yellow-400')
+    expect(btn3.className).toContain('text-gray-900') // dark text for contrast on yellow-400
+    const btn5 = screen.getByRole('button', { name: 'Niveau 5 sur 5' }) // inactive here
+    expect(btn5.className).toContain('bg-green-50')
+    expect(btn5.className).toContain('text-green-700')
+  })
 })

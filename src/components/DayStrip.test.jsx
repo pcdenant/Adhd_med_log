@@ -48,4 +48,13 @@ describe('DayStrip', () => {
     await userEvent.click(screen.getByRole('button', { name: /16 juillet/ }))
     expect(onSelect).toHaveBeenCalledWith('2026-07-16')
   })
+
+  // AI-tell regression guard: the "eyebrow" uppercase-tracked heading pattern
+  // was removed from this heading — don't let it drift back in.
+  it('the section heading does not use the uppercase-tracked eyebrow pattern', () => {
+    setup()
+    const heading = screen.getByRole('heading', { name: '14 derniers jours' })
+    expect(heading.className).not.toMatch(/uppercase/)
+    expect(heading.className).not.toMatch(/tracking-widest/)
+  })
 })

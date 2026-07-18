@@ -32,7 +32,7 @@ export default function DayStrip({ days, loggedDates, selectedDate, todayKey, on
   return (
     <div className="mb-6">
       <div className="flex items-baseline justify-between mb-2">
-        <h3 className="text-xs font-bold text-vert uppercase tracking-widest">14 derniers jours</h3>
+        <h3 className="text-xs font-semibold text-gray-700">14 derniers jours</h3>
         <span className="text-xs text-gray-500">
           {missing > 0 ? `${missing} à compléter` : 'tout est saisi ✓'}
         </span>
