@@ -63,6 +63,6 @@ The [impeccable](https://github.com/pbakaus/impeccable) Claude Code skill is ven
 
 ## Known architectural debt
 
-- **No date navigation.** The daily check-in only ever targets `getTodayKey()`. `saveEntry` in `App.jsx` already dedupes by `entry.date`, so it *can* accept a backdated entry — there's just no UI to produce one. This is the top item in `PRODUCT.md`'s Known Gaps.
+- **Date navigation** is handled by `DayStrip.jsx` + a `selectedDate` state in `DailyCheckIn.jsx`; `buildDayWindow` (in `calculations.js`) computes the selectable 14-day window, and `saveEntry` dedupes by `entry.date` so any selected day is logged/edited in place.
 - **No error boundaries, no `localStorage` error handling.** `loadData()`'s `catch (_) {}` and `persistData()`'s unguarded `setItem` mean any read/write failure is invisible to the user.
 - **No accessibility semantics.** Zero `aria-`/`role` attributes in `src/`; three form inputs (time, notes, header edit fields) have no `<label>`.

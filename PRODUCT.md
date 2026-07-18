@@ -63,7 +63,7 @@ Before this tool, P-C had no systematic way to evaluate whether his established 
 - Wear-off / rebound: none · mild · strong
 - Seven yes/no side effects with optional Léger/Modéré/Sévère severity (`SIDE_EFFECTS`)
 - Free notes, 500 characters
-- One entry per calendar day; re-visiting today's already-saved entry shows a read-only summary with an edit option. **There is no way to log or edit a day other than today** — see Known Gaps.
+- One entry per calendar day; re-visiting an already-saved day shows a read-only summary with an edit option. A 14-day strip (`DayStrip`) at the top of the check-in lets the user select **any day in the report window** to log or edit it, defaulting to today. For a backfilled past day the check-in time is an optional field (empty = excluded from the wear-off chart, never fabricated).
 
 **2-week report (`src/components/Report.jsx`, unlocks at ≥10 entries in the trailing 14 days):**
 - **A. Wear-off timeline** — entries bucketed by hours elapsed since dose (0-3h/3-6h/6-9h/9-12h/12h+), averaged wear-off severity per bucket, used to estimate reliable coverage hours
@@ -125,7 +125,7 @@ Per the original PRD, these are intentional MVP exclusions, not oversights — d
 An `/impeccable audit` and `/impeccable critique` pass (July 2026) surfaced real gaps the original PRD didn't anticipate, on top of the PRD's own stated future ideas. Merged into one priority list:
 
 **Near-term (found by audit/critique, not in original PRD):**
-- **[P0]** No way to log or edit a day other than today — the most likely failure mode for this exact user (a missed day becomes a permanent gap in the report window), even though `saveEntry` already supports arbitrary dates at the data layer
+- ~~**[P0]** No way to log or edit a day other than today~~ — **shipped**: the 14-day `DayStrip` lets the user backfill/edit any day in the report window.
 - **[P1]** Daily check-in is a monolithic, undivided scroll (6 + 7 decisions at once) — cognitive-load checklist scored 4/8 failures for a user population defined by difficulty sustaining exactly that kind of task
 - **[P1]** Silent data loss: `loadData()` swallows parse errors with a bare `catch`, so corrupted/blocked `localStorage` reads as "new user" with zero warning; no export-before-reset offramp
 - **[P2]** Zero accessibility semantics (`aria-`/`role`) anywhere in the code, most notably on the Likert scale — the single most-repeated interaction, 6×/day
