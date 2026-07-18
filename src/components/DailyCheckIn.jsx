@@ -6,18 +6,21 @@ import { DIMENSIONS, SIDE_EFFECTS, getTodayKey, buildDayWindow } from '../utils/
 const WEAR_OFF_OPTIONS = [
   {
     value: 'none',
+    short: 'Aucun',
     label: 'Aucun — médicament pleinement actif',
     classes: 'border-green-200 bg-green-50 text-green-800',
     activeClasses: 'border-green-500 bg-green-100 text-green-900 ring-1 ring-green-400',
   },
   {
     value: 'mild',
+    short: 'Léger',
     label: "Léger — je commence à sentir l'essoufflement, encore en grande partie efficace",
     classes: 'border-yellow-200 bg-yellow-50 text-yellow-800',
     activeClasses: 'border-yellow-400 bg-yellow-100 text-yellow-900 ring-1 ring-yellow-400',
   },
   {
     value: 'strong',
+    short: 'Fort',
     label: 'Fort — rebond ou essoufflement clair, nettement moins efficace',
     classes: 'border-red-200 bg-red-50 text-red-800',
     activeClasses: 'border-red-400 bg-red-100 text-red-900 ring-1 ring-red-400',
@@ -90,6 +93,25 @@ function relativeLabel(dateKey, todayKey) {
   return `il y a ${days} jours`
 }
 
+// Accordion section order. Time/dimensions/wear-off auto-advance to the next
+// section once complete; side effects and notes are optional and never
+// block or trigger advance — the user opens them via their header if wanted.
+const TIME = 0
+const DIMENSIONS_SECTION = 1
+const WEAR_OFF = 2
+const SIDE_EFFECTS_SECTION = 3
+const NOTES = 4
+
+function dimensionsSummary(form) {
+  const filled = DIMENSIONS.filter(d => form.dimensions[d.key] != null).length
+  return filled > 0 ? `${filled}/6 notées` : null
+}
+
+function sideEffectsSummary(form) {
+  const count = SIDE_EFFECTS.filter(se => form.sideEffects[se.key]).length
+  return count > 0 ? `${count} coché${count > 1 ? 's' : ''}` : null
+}
+
 export default function DailyCheckIn({ entries, cycle, onSave }) {
   const todayKey = getTodayKey()
   const [selectedDate, setSelectedDate] = useState(todayKey)
@@ -102,13 +124,15 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
     existingEntry ? entryToForm(existingEntry) : { ...FRESH_FORM }
   )
   const [justSaved, setJustSaved] = useState(false)
+  const [activeSection, setActiveSection] = useState(TIME)
 
-  // Switching to another day reloads the form for that day.
+  // Switching to another day reloads the form for that day and restarts the accordion.
   useEffect(() => {
     const entry = entries.find(e => e.date === selectedDate)
     setForm(entry ? entryToForm(entry) : { ...FRESH_FORM })
     setEditing(!entry)
     setJustSaved(false)
+    setActiveSection(TIME)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate])
 
@@ -118,8 +142,20 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
   const dateDisplay = formatLongDate(selectedDate)
   const relative = relativeLabel(selectedDate, todayKey)
 
+  const handleTimeChange = (value) => {
+    setForm(f => ({ ...f, timeTaken: value }))
+    if (/^\d{2}:\d{2}$/.test(value)) setActiveSection(DIMENSIONS_SECTION)
+  }
+
   const setDimension = (key, value) => {
-    setForm(f => ({ ...f, dimensions: { ...f.dimensions, [key]: value } }))
+    const dimensions = { ...form.dimensions, [key]: value }
+    setForm(f => ({ ...f, dimensions }))
+    if (DIMENSIONS.every(d => dimensions[d.key] != null)) setActiveSection(WEAR_OFF)
+  }
+
+  const handleWearOffChange = (value) => {
+    setForm(f => ({ ...f, wearOff: value }))
+    setActiveSection(SIDE_EFFECTS_SECTION)
   }
 
   const toggleSideEffect = (key) => {
@@ -154,6 +190,14 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
     setEditing(false)
     setTimeout(() => setJustSaved(false), 4000)
   }
+
+  const sectionsTouched = [
+    !!form.timeTaken,
+    dimensionsSummary(form) != null,
+    form.wearOff != null,
+    sideEffectsSummary(form) != null,
+    form.notes.length > 0,
+  ].filter(Boolean).length
 
   const navigator = (
     <>
@@ -209,6 +253,7 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
               onClick={() => {
                 setForm(entryToForm(existingEntry))
                 setEditing(true)
+                setActiveSection(TIME)
               }}
               className="text-sm text-vert underline underline-offset-2 hover:no-underline"
             >
@@ -225,21 +270,30 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
       {navigator}
       <form onSubmit={handleSubmit}>
         {/* Date header */}
-        <div className="mb-7 pb-4 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-800 capitalize">{dateDisplay}</h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            {isToday ? 'Saisie quotidienne · environ 3 minutes' : `Rattrapage · ${relative}`}
-          </p>
+        <div className="mb-1 pb-4 border-b border-gray-100 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-gray-800 capitalize">{dateDisplay}</h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {isToday ? 'Saisie quotidienne · environ 3 minutes' : `Rattrapage · ${relative}`}
+            </p>
+          </div>
+          <span className="text-xs font-mono text-gray-500 flex-shrink-0 mt-0.5">{sectionsTouched}/5</span>
         </div>
 
         {/* ── Section 1: Time taken ── */}
-        <section className="mb-8">
-          <SectionTitle icon="💊" label="Heure de prise" />
+        <AccordionSection
+          id="time"
+          icon="💊"
+          label="Heure de prise"
+          summary={form.timeTaken ? `Prise à ${form.timeTaken}` : null}
+          isOpen={activeSection === TIME}
+          onToggle={() => setActiveSection(TIME)}
+        >
           <div className="max-w-xs">
             <input
               type="time"
               value={form.timeTaken}
-              onChange={e => setForm(f => ({ ...f, timeTaken: e.target.value }))}
+              onChange={e => handleTimeChange(e.target.value)}
               required
               aria-label="Heure de prise du médicament"
               className="w-full px-4 py-3 border border-gray-200 rounded-xl font-mono text-xl focus:outline-none focus:ring-2 focus:ring-vert focus:border-transparent transition-shadow"
@@ -264,11 +318,17 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
               </p>
             </div>
           )}
-        </section>
+        </AccordionSection>
 
         {/* ── Section 2: 6 Brown dimensions ── */}
-        <section className="mb-8">
-          <SectionTitle icon="🧠" label="Fonctions exécutives — Brown (6 dimensions)" />
+        <AccordionSection
+          id="dimensions"
+          icon="🧠"
+          label="Fonctions exécutives — Brown (6 dimensions)"
+          summary={dimensionsSummary(form)}
+          isOpen={activeSection === DIMENSIONS_SECTION}
+          onToggle={() => setActiveSection(DIMENSIONS_SECTION)}
+        >
           <div className="space-y-1">
             {DIMENSIONS.map(dim => (
               <LikertScale
@@ -282,11 +342,17 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
               />
             ))}
           </div>
-        </section>
+        </AccordionSection>
 
         {/* ── Section 3: Wear-off ── */}
-        <section className="mb-8">
-          <SectionTitle icon="⏱️" label="Essoufflement du médicament" />
+        <AccordionSection
+          id="wear-off"
+          icon="⏱️"
+          label="Essoufflement du médicament"
+          summary={WEAR_OFF_OPTIONS.find(o => o.value === form.wearOff)?.short ?? null}
+          isOpen={activeSection === WEAR_OFF}
+          onToggle={() => setActiveSection(WEAR_OFF)}
+        >
           <p className="text-xs text-gray-500 italic mb-3">
             Comment le médicament agit-il {isToday ? 'en ce moment' : 'ce jour-là'} ?
           </p>
@@ -303,20 +369,26 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
                   name="wearOff"
                   value={opt.value}
                   checked={form.wearOff === opt.value}
-                  onChange={() => setForm(f => ({ ...f, wearOff: opt.value }))}
+                  onChange={() => handleWearOffChange(opt.value)}
                   className="mt-0.5 accent-vert flex-shrink-0"
                 />
                 <span className="text-sm leading-snug">{opt.label}</span>
               </label>
             ))}
           </div>
-        </section>
+        </AccordionSection>
 
         {/* ── Section 4: Side effects ── */}
-        <section className="mb-8">
-          <SectionTitle icon="⚠️" label="Effets secondaires" />
+        <AccordionSection
+          id="side-effects"
+          icon="⚠️"
+          label="Effets secondaires"
+          summary={sideEffectsSummary(form) ?? 'Aucun'}
+          isOpen={activeSection === SIDE_EFFECTS_SECTION}
+          onToggle={() => setActiveSection(SIDE_EFFECTS_SECTION)}
+        >
           <p className="text-xs text-gray-500 italic mb-3">
-            Cochez ce que vous ressentez {isToday ? "aujourd'hui" : 'ce jour-là'} (optionnel: précisez la sévérité)
+            Cochez ce que vous ressentez {isToday ? "aujourd'hui" : 'ce jour-là'} (optionnel : précisez la sévérité)
           </p>
           <div className="space-y-2">
             {SIDE_EFFECTS.map(se => (
@@ -367,11 +439,18 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
               </div>
             ))}
           </div>
-        </section>
+        </AccordionSection>
 
         {/* ── Section 5: Free notes ── */}
-        <section className="mb-8">
-          <SectionTitle icon="📝" label="Notes libres" />
+        <AccordionSection
+          id="notes"
+          icon="📝"
+          label="Notes libres"
+          summary={form.notes ? `${form.notes.length} caractère${form.notes.length > 1 ? 's' : ''}` : null}
+          isOpen={activeSection === NOTES}
+          onToggle={() => setActiveSection(NOTES)}
+          last
+        >
           <textarea
             value={form.notes}
             onChange={e => setForm(f => ({ ...f, notes: e.target.value.slice(0, 500) }))}
@@ -383,12 +462,12 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
           <div className="text-right text-xs text-gray-500 mt-1 font-mono">
             {form.notes.length}/500
           </div>
-        </section>
+        </AccordionSection>
 
         {/* ── Submit ── */}
         <button
           type="submit"
-          className="w-full bg-vert text-white py-4 rounded-2xl font-semibold text-base hover:bg-vert-dark transition-colors shadow-sm hover:shadow-md"
+          className="w-full mt-6 bg-vert text-white py-4 rounded-2xl font-semibold text-base hover:bg-vert-dark transition-colors shadow-sm hover:shadow-md"
         >
           {isToday ? 'Enregistrer la saisie du jour ✓' : 'Enregistrer cette journée ✓'}
         </button>
@@ -397,11 +476,53 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
   )
 }
 
-function SectionTitle({ icon, label }) {
+// One accordion section: a heading-wrapped toggle button (title, collapsed
+// summary, chevron) plus a content panel. Only the active panel is rendered
+// visible/reachable (`hidden`), so the daily form never shows more than one
+// section's worth of decisions at once, for keyboard and screen-reader users
+// too, not just visually.
+function AccordionSection({ id, icon, label, summary, isOpen, onToggle, last, children }) {
+  const panelId = `checkin-panel-${id}`
+  const headerId = `checkin-header-${id}`
   return (
-    <h3 className="flex items-center gap-2 text-xs font-bold text-vert uppercase tracking-widest mb-4">
-      <span aria-hidden="true">{icon}</span>
-      <span>{label}</span>
-    </h3>
+    <section className={last ? 'py-4' : 'py-4 border-b border-gray-100'}>
+      <h3 className="m-0">
+        <button
+          type="button"
+          id={headerId}
+          aria-expanded={isOpen}
+          aria-controls={panelId}
+          onClick={onToggle}
+          className="w-full flex items-center justify-between gap-3 text-left"
+        >
+          <span className="flex items-center gap-2 text-xs font-bold text-vert uppercase tracking-widest">
+            <span aria-hidden="true">{icon}</span>
+            <span>{label}</span>
+          </span>
+          <span className="flex items-center gap-2 flex-shrink-0">
+            {!isOpen && summary && (
+              <span className="text-xs font-normal normal-case tracking-normal text-gray-500 truncate max-w-[40vw] sm:max-w-xs">
+                {summary}
+              </span>
+            )}
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              className={`w-4 h-4 text-vert transition-transform motion-reduce:transition-none duration-200 ${isOpen ? 'rotate-180' : ''}`}
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M5.23 7.21a.75.75 0 011.06.02L10 11.19l3.71-3.96a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+              />
+            </svg>
+          </span>
+        </button>
+      </h3>
+      <div id={panelId} hidden={!isOpen} className="pt-4">
+        {children}
+      </div>
+    </section>
   )
 }

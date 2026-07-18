@@ -48,6 +48,63 @@ describe('DailyCheckIn', () => {
   })
 })
 
+describe('DailyCheckIn — accordion', () => {
+  it('opens only the first section by default; later sections are hidden from the a11y tree', () => {
+    render(<DailyCheckIn entries={[]} onSave={vi.fn()} />)
+    expect(screen.getByLabelText('Heure de prise du médicament')).toBeInTheDocument()
+    // Dimensions/wear-off/side-effects/notes controls aren't queryable while their panel is hidden
+    // (getByRole respects the accessibility tree; getByLabelText does not, so byRole is the right check here).
+    expect(screen.queryByRole('group', { name: /Focus & Attention/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('textbox', { name: 'Notes libres' })).not.toBeInTheDocument()
+  })
+
+  it('auto-advances to the next section once the current one is complete', async () => {
+    render(<DailyCheckIn entries={[]} onSave={vi.fn()} />)
+
+    fireEvent.change(screen.getByLabelText('Heure de prise du médicament'), { target: { value: '08:30' } })
+    // Time complete -> dimensions section opens.
+    const focusGroup = await screen.findByRole('group', { name: /Focus & Attention/ })
+    expect(screen.queryByRole('radio', { name: /Aucun — médicament/ })).not.toBeInTheDocument()
+
+    // Fill all six dimensions -> wear-off section opens.
+    for (const label of [
+      'Focus & Attention', 'Initiation des tâches', 'Régulation émotionnelle',
+      'Contrôle des impulsions', 'Mémoire de travail', 'Sens du temps',
+    ]) {
+      const group = screen.getByRole('group', { name: new RegExp(label) })
+      await userEvent.click(within(group).getByRole('button', { name: 'Niveau 3 sur 5' }))
+    }
+    expect(await screen.findByRole('radio', { name: /Aucun — médicament/ })).toBeInTheDocument()
+
+    // Choosing a wear-off level opens the side-effects section.
+    await userEvent.click(screen.getByRole('radio', { name: /Aucun — médicament/ }))
+    expect(await screen.findByText(/Suppression d'appétit/)).toBeInTheDocument()
+  })
+
+  it('reopens a section on demand via its header and shows a collapsed summary', async () => {
+    render(<DailyCheckIn entries={[]} onSave={vi.fn()} />)
+    fireEvent.change(screen.getByLabelText('Heure de prise du médicament'), { target: { value: '08:30' } })
+
+    // Time header now shows a summary and is collapsed.
+    const timeHeader = screen.getByRole('button', { name: /Heure de prise/ })
+    expect(timeHeader).toHaveTextContent('Prise à 08:30')
+    expect(timeHeader).toHaveAttribute('aria-expanded', 'false')
+
+    // Clicking it reopens the section.
+    await userEvent.click(timeHeader)
+    expect(timeHeader).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByLabelText('Heure de prise du médicament')).toBeInTheDocument()
+  })
+
+  it('never blocks on the optional side-effects/notes sections', async () => {
+    const onSave = vi.fn()
+    render(<DailyCheckIn entries={[]} onSave={onSave} />)
+    fireEvent.change(screen.getByLabelText('Heure de prise du médicament'), { target: { value: '08:30' } })
+    await userEvent.click(screen.getByRole('button', { name: /Enregistrer la saisie du jour/ }))
+    expect(onSave).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe('DailyCheckIn — missed-day catch-up', () => {
   beforeEach(() => vi.setSystemTime(new Date('2026-07-18T10:00:00Z')))
   afterEach(() => vi.useRealTimers())
