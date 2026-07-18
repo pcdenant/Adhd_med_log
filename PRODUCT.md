@@ -127,7 +127,7 @@ An `/impeccable audit` and `/impeccable critique` pass (July 2026) surfaced real
 **Near-term (found by audit/critique, not in original PRD):**
 - ~~**[P0]** No way to log or edit a day other than today~~ — **shipped**: the 14-day `DayStrip` lets the user backfill/edit any day in the report window.
 - **[P1]** Daily check-in is a monolithic, undivided scroll (6 + 7 decisions at once) — cognitive-load checklist scored 4/8 failures for a user population defined by difficulty sustaining exactly that kind of task
-- **[P1]** Silent data loss: `loadData()` swallows parse errors with a bare `catch`, so corrupted/blocked `localStorage` reads as "new user" with zero warning; no export-before-reset offramp
+- ~~**[P1]** Silent data loss~~ — **shipped**: unreadable stored data now shows a dedicated screen instead of silently reading as "new user" (and never auto-clears — only an explicit, confirmed action does); a failed write shows a dismissible warning banner instead of vanishing. Still intentionally no export — that stays out of scope per the section above.
 - **[P2]** Zero accessibility semantics (`aria-`/`role`) anywhere in the code, most notably on the Likert scale — the single most-repeated interaction, 6×/day
 - **[P2]** ~17 instances of sub-AA gray-on-white text; inconsistent status-color logic duplicated across `Report.jsx` and `LikertScale.jsx`
 
