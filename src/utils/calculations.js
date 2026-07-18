@@ -58,6 +58,34 @@ export const SIDE_EFFECTS = [
 export const DAYS_SHORT = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
 export const DAYS_FULL = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
 
+// Today's entry key (YYYY-MM-DD). Kept here so the daily form and the
+// missing-day window agree on what "today" is.
+export function getTodayKey() {
+  return new Date().toISOString().split('T')[0]
+}
+
+// Shift a YYYY-MM-DD key by whole days, anchored at UTC noon so the result is
+// timezone-independent and never lands on a DST edge.
+function shiftKey(key, delta) {
+  const d = new Date(key + 'T12:00:00Z')
+  d.setUTCDate(d.getUTCDate() + delta)
+  return d.toISOString().split('T')[0]
+}
+
+// Ascending list of date keys for the report window: `today` back to
+// max(cycleStartDate, today - 13), capped at 14 days and never in the future.
+// This is the set of days the user is allowed to log or backfill.
+export function buildDayWindow(cycleStartDate, todayKey = getTodayKey()) {
+  let start = shiftKey(todayKey, -13)
+  if (cycleStartDate && cycleStartDate > start) start = cycleStartDate
+  if (start > todayKey) start = todayKey
+  const keys = []
+  for (let cursor = start; cursor <= todayKey; cursor = shiftKey(cursor, 1)) {
+    keys.push(cursor)
+  }
+  return keys
+}
+
 // Get entries from the last 14 calendar days
 export function getEntriesLast14Days(entries) {
   const cutoff = new Date()

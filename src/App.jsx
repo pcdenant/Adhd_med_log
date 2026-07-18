@@ -105,7 +105,7 @@ export default function App() {
         {/* Panel */}
         <div className="bg-white rounded-b-2xl shadow-sm border border-t-0 border-gray-200">
           {activeTab === 'checkin' && (
-            <DailyCheckIn entries={entries} onSave={saveEntry} />
+            <DailyCheckIn entries={entries} cycle={cycle} onSave={saveEntry} />
           )}
           {activeTab === 'report' && (
             <Report entries={entries} cycle={cycle} onReset={resetCycle} />

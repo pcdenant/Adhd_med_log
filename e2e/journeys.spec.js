@@ -42,6 +42,25 @@ test('golden journey 1: onboarding then log the first daily check-in', async ({ 
   await expect(page.getByText('Saisie du jour enregistrée')).toBeVisible()
 })
 
+test('golden journey 3: backfill a missed past day from the 14-day strip', async ({ page }) => {
+  await page.addInitScript(() => {
+    const key = (o) => { const d = new Date(); d.setDate(d.getDate() - o); return d.toISOString().split('T')[0] }
+    localStorage.setItem('ammt_v2', JSON.stringify({
+      cycle: { medicationName: 'Concerta', dosage: '36mg', cycleStartDate: key(8), createdAt: new Date().toISOString() },
+      entries: [],
+    }))
+  })
+  await page.goto('/')
+
+  // Jump to the first day still to complete, fill the required dose time, save.
+  await page.getByRole('button', { name: /à compléter/ }).first().click()
+  await expect(page.getByText(/Vous complétez/)).toBeVisible()
+  await page.getByLabel('Heure de prise du médicament').fill('08:00')
+  await page.getByRole('button', { name: /Enregistrer cette journée/ }).click()
+
+  await expect(page.getByText('Journée déjà saisie')).toBeVisible()
+})
+
 test('golden journey 2: report unlocks and renders with enough entries', async ({ page }) => {
   await page.addInitScript(
     ([cycle, entries]) => {

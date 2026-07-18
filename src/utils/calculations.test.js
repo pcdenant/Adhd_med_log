@@ -3,6 +3,8 @@ import {
   DIMENSIONS,
   SIDE_EFFECTS,
   getEntriesLast14Days,
+  getTodayKey,
+  buildDayWindow,
   timeToMinutes,
   calculateWearOffTimeline,
   estimateCoverageHours,
@@ -62,6 +64,40 @@ describe('domain constants', () => {
   it('exposes the seven tracked side effects', () => {
     expect(SIDE_EFFECTS).toHaveLength(7)
     expect(SIDE_EFFECTS.map(s => s.key)).toContain('headache')
+  })
+})
+
+describe('getTodayKey', () => {
+  it('returns an ISO YYYY-MM-DD date key', () => {
+    expect(getTodayKey()).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+})
+
+describe('buildDayWindow', () => {
+  it('returns the trailing 14 days, ascending, ending today', () => {
+    const w = buildDayWindow('2026-01-01', '2026-07-18')
+    expect(w).toHaveLength(14)
+    expect(w[0]).toBe('2026-07-05')
+    expect(w[13]).toBe('2026-07-18')
+    expect([...w]).toEqual([...w].sort()) // already ascending
+  })
+
+  it('never starts before the cycle start date', () => {
+    expect(buildDayWindow('2026-07-16', '2026-07-18')).toEqual([
+      '2026-07-16', '2026-07-17', '2026-07-18',
+    ])
+  })
+
+  it('is just today when the cycle started today', () => {
+    expect(buildDayWindow('2026-07-18', '2026-07-18')).toEqual(['2026-07-18'])
+  })
+
+  it('never includes future days, even with a future cycle start', () => {
+    expect(buildDayWindow('2026-07-20', '2026-07-18')).toEqual(['2026-07-18'])
+  })
+
+  it('falls back to a full 14-day window when no cycle start is given', () => {
+    expect(buildDayWindow(undefined, '2026-07-18')).toHaveLength(14)
   })
 })
 

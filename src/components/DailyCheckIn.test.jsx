@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, within, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import DailyCheckIn from './DailyCheckIn.jsx'
@@ -45,5 +45,47 @@ describe('DailyCheckIn', () => {
     )
     expect(screen.getByText('Saisie du jour enregistrée')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Enregistrer la saisie du jour/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('DailyCheckIn — missed-day catch-up', () => {
+  beforeEach(() => vi.setSystemTime(new Date('2026-07-18T10:00:00Z')))
+  afterEach(() => vi.useRealTimers())
+
+  it('backfills a past day, keeping an empty check-in time out of the data', async () => {
+    const onSave = vi.fn()
+    render(<DailyCheckIn entries={[]} cycle={{ cycleStartDate: '2026-07-10' }} onSave={onSave} />)
+
+    // Jump to a past day via the strip.
+    await userEvent.click(screen.getByRole('button', { name: /15 juillet/ }))
+
+    // Past-day affordances appear.
+    expect(screen.getByText(/Vous complétez/)).toBeInTheDocument()
+    const checkIn = screen.getByLabelText('Heure du point (évaluation)')
+    expect(checkIn).toBeInTheDocument()
+
+    // Required dose time only; leave the check-in time empty, then save.
+    fireEvent.change(screen.getByLabelText('Heure de prise du médicament'), { target: { value: '08:00' } })
+    await userEvent.click(screen.getByRole('button', { name: /Enregistrer cette journée/ }))
+
+    expect(onSave).toHaveBeenCalledTimes(1)
+    const payload = onSave.mock.calls[0][0]
+    expect(payload.date).toBe('2026-07-15')
+    expect(payload.timeTaken).toBe('08:00')
+    expect(payload.timeLogged).toBe('') // empty -> excluded from wear-off timeline, never fabricated
+    expect(payload).not.toHaveProperty('checkInTime')
+  })
+
+  it('shows a read-only summary when a past day is already logged', async () => {
+    render(
+      <DailyCheckIn
+        cycle={{ cycleStartDate: '2026-07-10' }}
+        entries={[{ date: '2026-07-15', timeTaken: '08:00', timeLogged: '17:00', dimensions: {}, sideEffects: {}, sideEffectSeverity: {}, notes: '' }]}
+        onSave={vi.fn()}
+      />
+    )
+    await userEvent.click(screen.getByRole('button', { name: /15 juillet/ }))
+    expect(screen.getByText('Journée déjà saisie')).toBeInTheDocument()
+    expect(screen.getByText(/17:00/)).toBeInTheDocument()
   })
 })
