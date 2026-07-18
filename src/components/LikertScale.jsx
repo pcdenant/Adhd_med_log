@@ -1,31 +1,6 @@
-// Likert 1–5 scale with color gradient (red=1 → green=5)
-const LEVELS = [
-  {
-    value: 1,
-    inactive: 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100',
-    active: 'bg-red-500 border-red-500 text-white shadow-sm',
-  },
-  {
-    value: 2,
-    inactive: 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100',
-    active: 'bg-orange-500 border-orange-500 text-white shadow-sm',
-  },
-  {
-    value: 3,
-    inactive: 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100',
-    active: 'bg-yellow-400 border-yellow-400 text-gray-900 shadow-sm',
-  },
-  {
-    value: 4,
-    inactive: 'bg-lime-50 border-lime-200 text-lime-700 hover:bg-lime-100',
-    active: 'bg-lime-500 border-lime-500 text-white shadow-sm',
-  },
-  {
-    value: 5,
-    inactive: 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100',
-    active: 'bg-green-600 border-green-600 text-white shadow-sm',
-  },
-]
+// Likert 1–5 scale with color gradient (red=1 → green=5), sourced from the
+// app's shared severity palette (src/utils/severityColors.js).
+import { SEVERITY_LEVELS as LEVELS } from '../utils/severityColors.js'
 
 export default function LikertScale({ value, onChange, label, question, lowLabel, highLabel }) {
   return (

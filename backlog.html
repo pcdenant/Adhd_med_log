@@ -146,8 +146,8 @@
     <div class="meta-row">
       <div class="stat">Audit (baseline)<strong>13/20</strong></div>
       <div class="stat">Critique (baseline)<strong>22/40</strong></div>
-      <div class="stat">Items résolus<strong>10/16</strong></div>
-      <div class="stat">Items ouverts<strong>4</strong></div>
+      <div class="stat">Items résolus<strong>14/16</strong></div>
+      <div class="stat">Items ouverts<strong>0</strong></div>
       <div class="stat">Différés (roadmap)<strong>2</strong></div>
     </div>
   </div>
@@ -161,8 +161,8 @@
   <h2>Backlog priorisé (P0 → P3)</h2>
   <div class="filters">
     <button data-filter="all" class="active">Tout (16)</button>
-    <button data-filter="open">Ouvert (4)</button>
-    <button data-filter="merged">Mergé (10)</button>
+    <button data-filter="open">Ouvert (0)</button>
+    <button data-filter="merged">Mergé (14)</button>
     <button data-filter="deferred">Différé (2)</button>
   </div>
   <table id="backlog-table">
@@ -241,27 +241,27 @@
         <td class="source">Audit</td>
         <td><span class="cmd">/impeccable harden</span></td>
       </tr>
-      <tr data-status="open">
+      <tr data-status="merged">
         <td><span class="pri pri-P2">P2</span></td>
-        <td><span class="status status-open">🔲 Ouvert</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #13</span></td>
         <td>Cibles tactiles sous 44px (pastilles de sévérité, boutons Sauver/Annuler du header en mode édition).</td>
-        <td class="loc">DailyCheckIn.jsx:426, Header.jsx:42,50</td>
+        <td class="loc">DailyCheckIn.jsx, Header.jsx</td>
         <td class="source">Audit</td>
         <td><span class="cmd">/impeccable adapt</span></td>
       </tr>
-      <tr data-status="open">
+      <tr data-status="merged">
         <td><span class="pri pri-P2">P2</span></td>
-        <td><span class="status status-open">🔲 Ouvert</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #13</span></td>
         <td>Motif "eyebrow" uppercase tracké répété (tell AI identifié dans les bans absolus impeccable) — présent sur les en-têtes d'accordéon, DayStrip, et le narrative du rapport.</td>
-        <td class="loc">DailyCheckIn.jsx:498, DayStrip.jsx:35, Report.jsx:285</td>
+        <td class="loc">DailyCheckIn.jsx, DayStrip.jsx, Report.jsx</td>
         <td class="source">Audit</td>
         <td><span class="cmd">/impeccable quieter</span></td>
       </tr>
-      <tr data-status="open">
+      <tr data-status="merged">
         <td><span class="pri pri-P2">P2</span></td>
-        <td><span class="status status-open">🔲 Ouvert</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #13</span></td>
         <td>Logique de couleur de statut dupliquée (dimColor/wearOffColor/heatClass dans Report.jsx vs. la palette hardcodée de LikertScale.jsx) — même concept, deux systèmes indépendants.</td>
-        <td class="loc">Report.jsx:23-37, LikertScale.jsx:2-28</td>
+        <td class="loc">src/utils/severityColors.js (nouveau)</td>
         <td class="source">Audit + Critique</td>
         <td><span class="cmd">/impeccable extract</span></td>
       </tr>
@@ -281,11 +281,11 @@
         <td class="source">Audit</td>
         <td class="loc">nettoyage manuel</td>
       </tr>
-      <tr data-status="open">
+      <tr data-status="merged">
         <td><span class="pri pri-P3">P3</span></td>
-        <td><span class="status status-open">🔲 Ouvert</span></td>
+        <td><span class="status status-merged">✅ Mergé — PR #13</span></td>
         <td>Zéro breakpoint responsive explicite — la heatmap jour-de-semaine (7 colonnes) devient serrée sous ~360px.</td>
-        <td class="loc">Report.jsx:182 (DayOfWeekSection)</td>
+        <td class="loc">Report.jsx (DayOfWeekSection)</td>
         <td class="source">Audit</td>
         <td><span class="cmd">/impeccable adapt</span></td>
       </tr>
@@ -333,7 +333,7 @@
 </main>
 
 <footer>
-  Généré le 18 juillet 2026 à partir des rapports <code>/impeccable audit</code> et <code>/impeccable critique</code> menés sur ce dépôt, annoté avec le suivi des PR mergées jusqu'au 18 juillet 2026 (PR #5 à #11). Voir <code>CHANGELOG.md</code> pour l'historique complet des PR et <code>PRODUCT.md</code> → Known Gaps &amp; Roadmap pour la version canonique et évolutive de ce backlog.
+  Généré le 18 juillet 2026 à partir des rapports <code>/impeccable audit</code> et <code>/impeccable critique</code> menés sur ce dépôt, annoté avec le suivi des PR mergées jusqu'au 18 juillet 2026 (PR #5 à #13 — les 16 items du tableau sont désormais tous traités : 14 mergés, 2 différés au roadmap volontairement). Voir <code>CHANGELOG.md</code> pour l'historique complet des PR et <code>PRODUCT.md</code> → Known Gaps &amp; Roadmap pour la version canonique et évolutive de ce backlog.
 </footer>
 
 <script>

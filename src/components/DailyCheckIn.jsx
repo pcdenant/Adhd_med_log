@@ -416,14 +416,14 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
                   <div className="px-4 pb-3 bg-orange-50 border-t border-orange-100">
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-xs text-gray-500 flex-shrink-0">Sévérité :</span>
-                      <div className="flex gap-1.5" role="group" aria-label={`Sévérité : ${se.label}`}>
+                      <div className="flex flex-wrap gap-1.5" role="group" aria-label={`Sévérité : ${se.label}`}>
                         {SEVERITY_OPTIONS.map(sev => (
                           <button
                             key={sev}
                             type="button"
                             aria-pressed={form.sideEffectSeverity[se.key] === sev}
                             onClick={() => setSeverity(se.key, sev)}
-                            className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                            className={`text-xs px-3 py-2.5 rounded-full border transition-colors ${
                               form.sideEffectSeverity[se.key] === sev
                                 ? 'bg-orange-500 text-white border-orange-500'
                                 : 'border-orange-400 text-orange-700 hover:bg-orange-100'
@@ -495,7 +495,7 @@ function AccordionSection({ id, icon, label, summary, isOpen, onToggle, last, ch
           onClick={onToggle}
           className="w-full flex items-center justify-between gap-3 text-left"
         >
-          <span className="flex items-center gap-2 text-xs font-bold text-vert uppercase tracking-widest">
+          <span className={`flex items-center gap-2 text-sm font-semibold ${isOpen ? 'text-vert' : 'text-gray-700'}`}>
             <span aria-hidden="true">{icon}</span>
             <span>{label}</span>
           </span>

@@ -17,28 +17,32 @@ import {
   calculateSideEffectFrequency,
   estimateCoverageHours,
 } from '../utils/calculations.js'
+import { hexForLevel, tintForLevel } from '../utils/severityColors.js'
 
 // ── Colour helpers ────────────────────────────────────────────────────────────
+// Bucket thresholds stay exact (they're tied to on-screen legend copy, e.g.
+// "Rouge < 2.5 · Jaune 2.5–3.5 · Vert > 3.5") — only the color VALUES come
+// from the shared severity palette instead of being re-picked here.
 
-function dimColor(avg) {
+export function dimColor(avg) {
   if (avg == null) return '#d1d5db'
-  if (avg < 2.5) return '#ef4444'
-  if (avg < 3.5) return '#f59e0b'
-  return '#22c55e'
+  if (avg < 2.5) return hexForLevel(1)
+  if (avg < 3.5) return hexForLevel(3)
+  return hexForLevel(5)
 }
 
-function wearOffColor(avg) {
-  if (avg <= 1.2) return '#22c55e'
-  if (avg <= 1.6) return '#84cc16'
-  if (avg <= 2.2) return '#f59e0b'
-  return '#ef4444'
+export function wearOffColor(avg) {
+  if (avg <= 1.2) return hexForLevel(5)
+  if (avg <= 1.6) return hexForLevel(4)
+  if (avg <= 2.2) return hexForLevel(3)
+  return hexForLevel(1)
 }
 
-function heatClass(norm) {
+export function heatClass(norm) {
   if (norm == null) return 'bg-gray-100 text-gray-500'
-  if (norm >= 0.65) return 'bg-green-100 text-green-800'
-  if (norm >= 0.35) return 'bg-yellow-100 text-yellow-800'
-  return 'bg-red-100 text-red-800'
+  if (norm >= 0.65) return tintForLevel(5)
+  if (norm >= 0.35) return tintForLevel(3)
+  return tintForLevel(1)
 }
 
 function formatDate(dateStr) {
@@ -179,17 +183,17 @@ function DayOfWeekSection({ entries }) {
   }
 
   return (
-    <div className="grid grid-cols-7 gap-1.5">
+    <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
       {ordered.map(d => (
         <div
           key={d.day}
-          className={`rounded-xl py-3 px-1 text-center ${heatClass(norm(d.avg))}`}
+          className={`rounded-xl py-2 px-0.5 sm:py-3 sm:px-1 text-center ${heatClass(norm(d.avg))}`}
         >
-          <div className="text-xs font-bold">{d.label}</div>
-          <div className="font-mono text-base font-bold mt-1">
+          <div className="text-[10px] sm:text-xs font-bold">{d.label}</div>
+          <div className="font-mono text-sm sm:text-base font-bold mt-0.5 sm:mt-1">
             {d.avg != null ? d.avg.toFixed(1) : '—'}
           </div>
-          <div className="text-xs opacity-50 mt-0.5">{d.count > 0 ? `${d.count}j` : ''}</div>
+          <div className="text-[10px] sm:text-xs opacity-50 mt-0.5">{d.count > 0 ? `${d.count}j` : ''}</div>
         </div>
       ))}
     </div>
@@ -282,7 +286,7 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
     <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200 space-y-5">
       {/* Header */}
       <div className="border-b border-gray-200 pb-4">
-        <p className="text-xs uppercase tracking-widest text-gray-500 mb-1">
+        <p className="text-sm font-semibold text-gray-700 mb-1">
           Bilan de maintenance médicamenteuse
         </p>
         <p className="font-mono font-bold text-gray-800 text-sm">
