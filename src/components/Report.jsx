@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  LabelList,
 } from 'recharts'
 import {
   getEntriesLast14Days,
@@ -18,6 +19,13 @@ import {
   estimateCoverageHours,
 } from '../utils/calculations.js'
 import { hexForLevel, tintForLevel } from '../utils/severityColors.js'
+import {
+  AlertTriangleIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  CalendarIcon,
+  ChartBarIcon,
+} from './icons.jsx'
 
 // ── Colour helpers ────────────────────────────────────────────────────────────
 // Bucket thresholds stay exact (they're tied to on-screen legend copy, e.g.
@@ -64,16 +72,22 @@ function WearOffSection({ entries }) {
     )
   }
 
+  // Colour is never the only signal here (design.md -> "never colour
+  // alone"): each bucket also gets a distinct icon and its own text label.
+  const iconFor = (v) => {
+    if (v <= 1.2) return <CheckCircleIcon className="w-3.5 h-3.5 text-[#2F6B44] flex-shrink-0" aria-hidden="true" />
+    return <AlertTriangleIcon className={`w-3.5 h-3.5 flex-shrink-0 ${v <= 1.9 ? 'text-[#6B5814]' : 'text-[#9C3C3D]'}`} aria-hidden="true" />
+  }
   const labelFor = (v) => {
-    if (v <= 1.2) return '✅ Pleinement actif'
-    if (v <= 1.9) return '🟡 Essoufflement léger'
-    return '🔴 Essoufflement fort'
+    if (v <= 1.2) return 'Pleinement actif'
+    if (v <= 1.9) return 'Essoufflement léger'
+    return 'Essoufflement fort'
   }
 
   return (
     <div>
       <ResponsiveContainer width="100%" height={180}>
-        <BarChart data={data} margin={{ top: 4, right: 8, left: -24, bottom: 4 }}>
+        <BarChart data={data} margin={{ top: 16, right: 8, left: -24, bottom: 4 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
           <XAxis dataKey="label" tick={{ fontSize: 11 }} />
           <YAxis
@@ -92,6 +106,12 @@ function WearOffSection({ entries }) {
             {data.map((d, i) => (
               <Cell key={i} fill={wearOffColor(d.avgWearOff)} />
             ))}
+            <LabelList
+              dataKey="avgWearOff"
+              position="top"
+              formatter={(v) => v?.toFixed(1)}
+              style={{ fontSize: 11, fontFamily: 'JetBrains Mono, monospace', fill: '#4B3A63' }}
+            />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
@@ -100,7 +120,10 @@ function WearOffSection({ entries }) {
         {data.map(d => (
           <div key={d.label} className="flex items-center justify-between text-xs">
             <span className="font-mono text-gray-500 w-14">{d.label}</span>
-            <span className="flex-1 mx-2">{labelFor(d.avgWearOff)}</span>
+            <span className="flex-1 mx-2 flex items-center gap-1.5">
+              {iconFor(d.avgWearOff)}
+              {labelFor(d.avgWearOff)}
+            </span>
             <span className="text-gray-500">{d.total} obs.</span>
           </div>
         ))}
@@ -138,21 +161,29 @@ function DimensionSection({ entries }) {
             {chartData.map((d, i) => (
               <Cell key={i} fill={d.fill} />
             ))}
+            <LabelList
+              dataKey="avg"
+              position="right"
+              formatter={(v) => v?.toFixed(1)}
+              style={{ fontSize: 11, fontFamily: 'JetBrains Mono, monospace', fill: '#4B3A63' }}
+            />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
 
       <div className="flex gap-4 mt-2 text-xs text-gray-500">
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" /> &lt; 2.5 défi persistant</span>
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-yellow-400 inline-block" /> 2.5–3.5 modéré</span>
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" /> &gt; 3.5 bon</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#B23B3B] inline-block" /> &lt; 2.5 défi persistant</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#E8C93E] inline-block" /> 2.5–3.5 modéré</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#2F6B44] inline-block" /> &gt; 3.5 bon</span>
       </div>
 
       {challenges.length > 0 && (
-        <div className="mt-3 bg-red-50 border border-red-100 rounded-xl p-3">
-          <p className="text-xs font-semibold text-red-700 mb-1">⚠️ Défis persistants (moy. &lt; 2.5)</p>
+        <div className="mt-3 bg-[#FBEAE8] border border-[#E3B3AF] rounded-xl p-3">
+          <p className="text-xs font-semibold text-[#9C3C3D] mb-1 flex items-center gap-1.5">
+            <AlertTriangleIcon className="w-3.5 h-3.5" aria-hidden="true" /> Défis persistants (moy. &lt; 2.5)
+          </p>
           {challenges.map(d => (
-            <p key={d.key} className="text-xs text-red-600">
+            <p key={d.key} className="text-xs text-[#9C3C3D]">
               • {d.label} —{' '}
               <span className="font-mono font-semibold">{d.avg?.toFixed(1)}/5</span>
             </p>
@@ -208,8 +239,9 @@ function SideEffectSection({ entries }) {
 
   if (!active.length) {
     return (
-      <div className="text-center py-5">
-        <span className="text-green-600 text-sm">✅ Aucun effet secondaire rapporté sur la période.</span>
+      <div className="text-center py-5 flex items-center justify-center gap-1.5">
+        <CheckCircleIcon className="w-4 h-4 text-[#2F6B44]" aria-hidden="true" />
+        <span className="text-[#2F6B44] text-sm">Aucun effet secondaire rapporté sur la période.</span>
       </div>
     )
   }
@@ -239,7 +271,16 @@ function SideEffectSection({ entries }) {
               props.payload.fullLabel,
             ]}
           />
-          <Bar dataKey="count" fill="#f97316" radius={[0, 4, 4, 0]} />
+          {/* Frequency, not a 1-5 severity score — uses the shared level-2
+              hex (warning-ish orange) instead of an ad hoc, untokenized fill. */}
+          <Bar dataKey="count" fill={hexForLevel(2)} radius={[0, 4, 4, 0]}>
+            <LabelList
+              dataKey="count"
+              position="right"
+              formatter={(v) => `${v}/14`}
+              style={{ fontSize: 11, fontFamily: 'JetBrains Mono, monospace', fill: '#4B3A63' }}
+            />
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
 
@@ -250,10 +291,10 @@ function SideEffectSection({ entries }) {
             <div className="flex items-center gap-2 flex-shrink-0">
               <span className="font-mono">{se.count}/14</span>
               {se.trend === 'increasing' && (
-                <span className="text-red-500 font-medium">↑ hausse</span>
+                <span className="text-[#9C3C3D] font-medium">↑ hausse</span>
               )}
               {se.trend === 'decreasing' && (
-                <span className="text-green-500 font-medium">↓ baisse</span>
+                <span className="text-[#2F6B44] font-medium">↓ baisse</span>
               )}
             </div>
           </div>
@@ -286,7 +327,7 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
     <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200 space-y-5">
       {/* Header */}
       <div className="border-b border-gray-200 pb-4">
-        <p className="text-sm font-semibold text-gray-700 mb-1">
+        <p className="font-display text-base font-semibold text-gray-700 mb-1">
           Bilan de maintenance médicamenteuse
         </p>
         <p className="font-mono font-bold text-gray-800 text-sm">
@@ -300,8 +341,9 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
 
       {/* Coverage */}
       <NarrativeBlock
-        color="text-vert"
-        title="⏱ Efficacité temporelle"
+        color="text-primary"
+        icon={<ClockIcon className="w-3.5 h-3.5" aria-hidden="true" />}
+        title="Efficacité temporelle"
         content={
           coverage != null ? (
             <p>
@@ -324,8 +366,9 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
       {/* Top dimensions */}
       {topDims.length > 0 && (
         <NarrativeBlock
-          color="text-green-700"
-          title="✅ Ce qui fonctionne bien"
+          color="text-[#2F6B44]"
+          icon={<CheckCircleIcon className="w-3.5 h-3.5" aria-hidden="true" />}
+          title="Ce qui fonctionne bien"
           content={topDims.map(d => (
             <p key={d.key}>
               • {d.label} —{' '}
@@ -339,8 +382,9 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
       {/* Challenges */}
       {challenges.length > 0 && (
         <NarrativeBlock
-          color="text-red-700"
-          title="⚠️ Défis persistants"
+          color="text-[#9C3C3D]"
+          icon={<AlertTriangleIcon className="w-3.5 h-3.5" aria-hidden="true" />}
+          title="Défis persistants"
           content={challenges.map(d => (
             <p key={d.key}>
               • {d.label} —{' '}
@@ -354,8 +398,9 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
       {/* Day pattern */}
       {hardestDay && (
         <NarrativeBlock
-          color="text-orange-700"
-          title="📅 Pattern hebdomadaire"
+          color="text-[#8A4B1D]"
+          icon={<CalendarIcon className="w-3.5 h-3.5" aria-hidden="true" />}
+          title="Pattern hebdomadaire"
           content={
             <p>
               Le <strong>{hardestDay.fullLabel}</strong> est systématiquement le jour le plus
@@ -370,8 +415,9 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
       {/* Side effects */}
       {activeSE.length > 0 && (
         <NarrativeBlock
-          color="text-orange-700"
-          title="⚠️ Effets secondaires"
+          color="text-[#8A4B1D]"
+          icon={<AlertTriangleIcon className="w-3.5 h-3.5" aria-hidden="true" />}
+          title="Effets secondaires"
           content={
             <>
               {activeSE.slice(0, 4).map(se => (
@@ -379,16 +425,17 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
                   • {se.label} —{' '}
                   <span className="font-mono">{se.count}/14 jours ({se.pct}%)</span>
                   {se.trend === 'increasing' && (
-                    <span className="text-red-500 font-medium"> ↑ en hausse</span>
+                    <span className="text-[#9C3C3D] font-medium"> ↑ en hausse</span>
                   )}
                   {se.trend === 'decreasing' && (
-                    <span className="text-green-600 font-medium"> ↓ en baisse</span>
+                    <span className="text-[#2F6B44] font-medium"> ↓ en baisse</span>
                   )}
                 </p>
               ))}
               {worsening.length > 0 && (
-                <p className="text-red-600 font-semibold mt-1">
-                  ⚠️ En hausse : {worsening.map(s => s.label).join(', ')}
+                <p className="text-[#9C3C3D] font-semibold mt-1 flex items-center gap-1.5">
+                  <AlertTriangleIcon className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+                  En hausse : {worsening.map(s => s.label).join(', ')}
                 </p>
               )}
             </>
@@ -417,10 +464,13 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
   )
 }
 
-function NarrativeBlock({ color, title, content }) {
+function NarrativeBlock({ color, icon, title, content }) {
   return (
     <div>
-      <p className={`text-xs font-bold uppercase tracking-wide mb-1.5 ${color}`}>{title}</p>
+      <p className={`text-xs font-bold uppercase tracking-wide mb-1.5 flex items-center gap-1.5 ${color}`}>
+        {icon}
+        {title}
+      </p>
       <div className="text-xs text-gray-700 space-y-0.5 leading-relaxed">{content}</div>
     </div>
   )
@@ -452,11 +502,11 @@ export default function Report({ entries, cycle, onReset }) {
       {/* Header */}
       <div className="mb-6 pb-4 border-b border-gray-100 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-base font-semibold text-gray-800">Rapport 2 semaines</h2>
+          <h2 className="font-display text-lg font-semibold text-gray-800">Rapport 2 semaines</h2>
           <p className="text-xs text-gray-500 mt-0.5">
             {recent.length} saisie{recent.length !== 1 ? 's' : ''} sur les 14 derniers jours
             {!hasEnough && (
-              <span className="text-orange-500">
+              <span className="text-[#8A4B1D]">
                 {' '}· encore {10 - recent.length} nécessaire{10 - recent.length > 1 ? 's' : ''}
               </span>
             )}
@@ -475,7 +525,7 @@ export default function Report({ entries, cycle, onReset }) {
       {/* Not enough data */}
       {!hasEnough ? (
         <div className="text-center py-12">
-          <div className="text-5xl mb-4" aria-hidden="true">📊</div>
+          <ChartBarIcon className="w-12 h-12 mx-auto mb-4 text-primary" aria-hidden="true" />
           <p className="text-gray-600 text-sm mb-1">
             Il faut au moins <strong>10 saisies</strong> sur 14 jours pour générer le rapport.
           </p>
@@ -486,7 +536,7 @@ export default function Report({ entries, cycle, onReset }) {
           {/* Progress bar */}
           <div className="max-w-xs mx-auto bg-gray-100 rounded-full h-2.5 overflow-hidden">
             <div
-              className="bg-vert h-2.5 rounded-full transition-all duration-500"
+              className="bg-primary h-2.5 rounded-full transition-all duration-500"
               style={{ width: `${Math.min(100, (recent.length / 10) * 100)}%` }}
             />
           </div>
@@ -545,15 +595,16 @@ export default function Report({ entries, cycle, onReset }) {
       {/* Reset cycle */}
       <div className="mt-10 pt-6 border-t border-gray-100">
         {confirmReset ? (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-            <p className="text-sm text-red-700 font-medium mb-3">
-              ⚠️ Toutes les saisies seront effacées de façon irréversible. Le nom du médicament et
+          <div className="bg-[#FBEAE8] border border-[#E3B3AF] rounded-xl p-4">
+            <p className="text-sm text-[#9C3C3D] font-medium mb-3 flex items-center gap-1.5">
+              <AlertTriangleIcon className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+              Toutes les saisies seront effacées de façon irréversible. Le nom du médicament et
               le dosage seront conservés.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => { onReset(); setConfirmReset(false) }}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-600 transition-colors"
+                className="bg-[#B23B3B] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#9C3232] transition-colors"
               >
                 Oui, réinitialiser
               </button>
@@ -568,7 +619,7 @@ export default function Report({ entries, cycle, onReset }) {
         ) : (
           <button
             onClick={() => setConfirmReset(true)}
-            className="text-xs text-gray-500 hover:text-red-500 transition-colors underline underline-offset-2"
+            className="text-xs text-gray-500 hover:text-[#9C3C3D] transition-colors underline underline-offset-2"
           >
             Réinitialiser et démarrer un nouveau cycle
           </button>
@@ -582,7 +633,7 @@ function ReportSection({ letter, title, subtitle, children }) {
   return (
     <section>
       <div className="flex items-baseline gap-2 mb-1">
-        <span className="font-mono font-bold text-vert text-sm bg-vert-light px-2 py-0.5 rounded">
+        <span className="font-mono font-bold text-primary text-sm bg-primary-light px-2 py-0.5 rounded">
           {letter}
         </span>
         <h3 className="font-semibold text-gray-800 text-sm">{title}</h3>

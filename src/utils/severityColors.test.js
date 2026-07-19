@@ -4,14 +4,14 @@ import { SEVERITY_LEVELS, hexForLevel, tintForLevel } from './severityColors.js'
 describe('severityColors', () => {
   it('exposes 5 ordered levels, red (1) to green (5)', () => {
     expect(SEVERITY_LEVELS.map(l => l.value)).toEqual([1, 2, 3, 4, 5])
-    expect(SEVERITY_LEVELS[0].hex).toBe('#ef4444')
-    expect(SEVERITY_LEVELS[4].hex).toBe('#16a34a')
+    expect(SEVERITY_LEVELS[0].hex).toBe('#B23B3B')
+    expect(SEVERITY_LEVELS[4].hex).toBe('#2F6B44')
   })
 
   it('hexForLevel returns the canonical hex per step', () => {
-    expect(hexForLevel(1)).toBe('#ef4444')
-    expect(hexForLevel(3)).toBe('#facc15')
-    expect(hexForLevel(5)).toBe('#16a34a')
+    expect(hexForLevel(1)).toBe('#B23B3B')
+    expect(hexForLevel(3)).toBe('#E8C93E')
+    expect(hexForLevel(5)).toBe('#2F6B44')
   })
 
   it('hexForLevel falls back to gray for an out-of-range level', () => {
@@ -19,10 +19,10 @@ describe('severityColors', () => {
     expect(hexForLevel(99)).toBe('#d1d5db')
   })
 
-  it('tintForLevel returns the matching bg-*-100/text-*-800 pair', () => {
-    expect(tintForLevel(1)).toBe('bg-red-100 text-red-800')
-    expect(tintForLevel(3)).toBe('bg-yellow-100 text-yellow-800')
-    expect(tintForLevel(5)).toBe('bg-green-100 text-green-800')
+  it('tintForLevel returns the matching danger/warning/success tint pair', () => {
+    expect(tintForLevel(1)).toBe('bg-[#FBEAE8] text-[#9C3C3D]')
+    expect(tintForLevel(3)).toBe('bg-[#FCF3D9] text-[#6B5814]')
+    expect(tintForLevel(5)).toBe('bg-[#EAF3EC] text-[#2F6B44]')
   })
 
   it('tintForLevel falls back to gray for an out-of-range level', () => {

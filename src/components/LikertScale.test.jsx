@@ -46,16 +46,17 @@ describe('LikertScale', () => {
     expect(screen.getByRole('button', { name: 'Niveau 2 sur 5' })).toHaveAttribute('aria-pressed', 'false')
   })
 
-  // Guards the severityColors.js extraction: the colors here are now sourced
-  // from a shared module, but the rendered classes — including the a11y
-  // contrast exceptions on levels 3 and 5 — must stay byte-identical.
-  it('renders the pre-extraction colors, including the a11y contrast exceptions', () => {
+  // Guards severityColors.js: the colors here are sourced from a shared
+  // module (design.md -> Semantic status colours), and every step was
+  // verified >= 4.5:1 on its own background — this locks the rendered
+  // classes so a future edit can't silently reintroduce a low-contrast pair.
+  it('renders the design.md semantic severity colors', () => {
     setup({ value: 3 })
     const btn3 = screen.getByRole('button', { name: 'Niveau 3 sur 5' })
-    expect(btn3.className).toContain('bg-yellow-400')
-    expect(btn3.className).toContain('text-gray-900') // dark text for contrast on yellow-400
+    expect(btn3.className).toContain('bg-[#E8C93E]')
+    expect(btn3.className).toContain('text-[#2A2410]') // dark ink for contrast on the level-3 amber
     const btn5 = screen.getByRole('button', { name: 'Niveau 5 sur 5' }) // inactive here
-    expect(btn5.className).toContain('bg-green-50')
-    expect(btn5.className).toContain('text-green-700')
+    expect(btn5.className).toContain('bg-[#EAF3EC]')
+    expect(btn5.className).toContain('text-[#2F6B44]')
   })
 })

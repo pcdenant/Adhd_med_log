@@ -3,6 +3,7 @@ import Header from './components/Header.jsx'
 import DailyCheckIn from './components/DailyCheckIn.jsx'
 import Report from './components/Report.jsx'
 import Onboarding from './components/Onboarding.jsx'
+import { AlertTriangleIcon, XIcon } from './components/icons.jsx'
 
 const STORAGE_KEY = 'ammt_v2'
 
@@ -98,7 +99,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-creme">
+    <div className="min-h-screen bg-bg">
       {saveError && <SaveErrorBanner onDismiss={() => setSaveError(false)} />}
 
       <Header cycle={cycle} entries={entries} onUpdateCycle={updateCycle} />
@@ -111,7 +112,7 @@ export default function App() {
             aria-pressed={activeTab === 'checkin'}
             className={`flex-1 py-3 text-sm font-medium transition-colors ${
               activeTab === 'checkin'
-                ? 'bg-vert text-white'
+                ? 'bg-primary text-white'
                 : 'text-gray-600 hover:bg-gray-50'
             }`}
           >
@@ -122,7 +123,7 @@ export default function App() {
             aria-pressed={activeTab === 'report'}
             className={`flex-1 py-3 text-sm font-medium transition-colors ${
               activeTab === 'report'
-                ? 'bg-vert text-white'
+                ? 'bg-primary text-white'
                 : 'text-gray-600 hover:bg-gray-50'
             }`}
           >
@@ -152,12 +153,12 @@ function UnreadableDataScreen({ onDiscard }) {
   const [confirming, setConfirming] = useState(false)
 
   return (
-    <div className="min-h-screen bg-creme flex items-center justify-center p-4">
+    <div className="min-h-screen bg-bg flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
-        <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <span className="text-3xl" aria-hidden="true">⚠️</span>
+        <div className="w-16 h-16 bg-[#FBEAE8] rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <AlertTriangleIcon className="w-8 h-8 text-[#9C3C3D]" aria-hidden="true" />
         </div>
-        <h1 className="text-lg font-bold text-gray-800 mb-2">Données illisibles</h1>
+        <h1 className="font-display text-lg font-semibold text-gray-800 mb-2">Données illisibles</h1>
         <p className="text-gray-600 text-sm leading-relaxed mb-6">
           Vos données enregistrées sur cet appareil semblent corrompues ou dans un format inattendu.
           Rien n'a été effacé — si vous pensez pouvoir les récupérer autrement, fermez cette page sans
@@ -168,13 +169,13 @@ function UnreadableDataScreen({ onDiscard }) {
           <button
             type="button"
             onClick={() => setConfirming(true)}
-            className="text-sm text-red-600 underline underline-offset-2 hover:no-underline"
+            className="text-sm text-[#9C3C3D] underline underline-offset-2 hover:no-underline"
           >
             Recommencer à zéro (efface les données illisibles)
           </button>
         ) : (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-left">
-            <p className="text-sm text-red-700 font-medium mb-3">
+          <div className="bg-[#FBEAE8] border border-[#E3B3AF] rounded-xl p-4 text-left">
+            <p className="text-sm text-[#9C3C3D] font-medium mb-3">
               Les données illisibles seront définitivement effacées de cet appareil. Cette action est
               irréversible.
             </p>
@@ -182,7 +183,7 @@ function UnreadableDataScreen({ onDiscard }) {
               <button
                 type="button"
                 onClick={onDiscard}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-600 transition-colors"
+                className="bg-[#B23B3B] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#9C3232] transition-colors"
               >
                 Oui, effacer et recommencer
               </button>
@@ -205,19 +206,20 @@ function SaveErrorBanner({ onDismiss }) {
   return (
     <div
       role="alert"
-      className="bg-red-50 border-b border-red-200 text-red-700 text-sm px-4 py-2.5 flex items-center justify-between gap-3"
+      className="bg-[#FBEAE8] border-b border-[#E3B3AF] text-[#9C3C3D] text-sm px-4 py-2.5 flex items-center justify-between gap-3"
     >
-      <span>
-        ⚠️ Impossible d'enregistrer — mémoire pleine ou navigation privée. Votre dernière saisie n'a
+      <span className="flex items-center gap-1.5">
+        <AlertTriangleIcon className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+        Impossible d'enregistrer — mémoire pleine ou navigation privée. Votre dernière saisie n'a
         pas été sauvegardée.
       </span>
       <button
         type="button"
         onClick={onDismiss}
         aria-label="Fermer cet avertissement"
-        className="text-red-500 hover:text-red-700 flex-shrink-0 text-base leading-none"
+        className="text-[#9C3C3D] hover:text-[#7A2C22] flex-shrink-0"
       >
-        ✕
+        <XIcon className="w-4 h-4" aria-hidden="true" />
       </button>
     </div>
   )
