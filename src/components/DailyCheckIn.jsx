@@ -2,28 +2,32 @@ import { useState, useEffect } from 'react'
 import LikertScale from './LikertScale.jsx'
 import DayStrip from './DayStrip.jsx'
 import { DIMENSIONS, SIDE_EFFECTS, getTodayKey, buildDayWindow } from '../utils/calculations.js'
+import { PillIcon, BrainIcon, ClockIcon, AlertTriangleIcon, NoteIcon, CheckCircleIcon } from './icons.jsx'
 
+// Same success/warning/danger vocabulary as severityColors.js (design.md ->
+// Semantic status colours) — wear-off severity is a clinical signal, so it
+// never borrows the brand primary/accent tokens.
 const WEAR_OFF_OPTIONS = [
   {
     value: 'none',
     short: 'Aucun',
     label: 'Aucun — médicament pleinement actif',
-    classes: 'border-green-200 bg-green-50 text-green-800',
-    activeClasses: 'border-green-500 bg-green-100 text-green-900 ring-1 ring-green-400',
+    classes: 'border-[#B7D6C2] bg-[#EAF3EC] text-[#2F6B44]',
+    activeClasses: 'border-[#2F6B44] bg-[#EAF3EC] text-[#2F6B44] ring-1 ring-[#2F6B44]',
   },
   {
     value: 'mild',
     short: 'Léger',
     label: "Léger — je commence à sentir l'essoufflement, encore en grande partie efficace",
-    classes: 'border-yellow-200 bg-yellow-50 text-yellow-800',
-    activeClasses: 'border-yellow-400 bg-yellow-100 text-yellow-900 ring-1 ring-yellow-400',
+    classes: 'border-[#EBDB9C] bg-[#FCF3D9] text-[#6B5814]',
+    activeClasses: 'border-[#6B5814] bg-[#FCF3D9] text-[#6B5814] ring-1 ring-[#6B5814]',
   },
   {
     value: 'strong',
     short: 'Fort',
     label: 'Fort — rebond ou essoufflement clair, nettement moins efficace',
-    classes: 'border-red-200 bg-red-50 text-red-800',
-    activeClasses: 'border-red-400 bg-red-100 text-red-900 ring-1 ring-red-400',
+    classes: 'border-[#E3B3AF] bg-[#FBEAE8] text-[#9C3C3D]',
+    activeClasses: 'border-[#9C3C3D] bg-[#FBEAE8] text-[#9C3C3D] ring-1 ring-[#9C3C3D]',
   },
 ]
 
@@ -209,14 +213,14 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
         onSelect={setSelectedDate}
       />
       {!isToday && (
-        <div className="mb-5 flex items-center justify-between gap-3 rounded-xl bg-vert-light px-4 py-2.5">
-          <p className="text-xs text-vert-dark">
+        <div className="mb-5 flex items-center justify-between gap-3 rounded-xl bg-primary-light px-4 py-2.5">
+          <p className="text-xs text-primary-dark">
             Vous complétez <strong>{relative}</strong>.
           </p>
           <button
             type="button"
             onClick={() => setSelectedDate(todayKey)}
-            className="text-xs font-semibold text-vert underline underline-offset-2 hover:no-underline whitespace-nowrap"
+            className="text-xs font-semibold text-primary underline underline-offset-2 hover:no-underline whitespace-nowrap"
           >
             Revenir à aujourd'hui
           </button>
@@ -231,8 +235,8 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
       <div className="p-6">
         {navigator}
         <div className="text-center py-10">
-          <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl" aria-hidden="true">✅</span>
+          <div className="w-16 h-16 bg-[#EAF3EC] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <CheckCircleIcon className="w-8 h-8 text-[#2F6B44]" aria-hidden="true" />
           </div>
           <h2 className="text-base font-semibold text-gray-800 mb-1">
             {isToday ? 'Saisie du jour enregistrée' : 'Journée déjà saisie'}
@@ -255,7 +259,7 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
                 setEditing(true)
                 setActiveSection(TIME)
               }}
-              className="text-sm text-vert underline underline-offset-2 hover:no-underline"
+              className="text-sm text-primary underline underline-offset-2 hover:no-underline"
             >
               {isToday ? "Modifier la saisie d'aujourd'hui" : 'Modifier cette journée'}
             </button>
@@ -283,7 +287,7 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
         {/* ── Section 1: Time taken ── */}
         <AccordionSection
           id="time"
-          icon="💊"
+          icon={<PillIcon className="w-4 h-4" />}
           label="Heure de prise"
           summary={form.timeTaken ? `Prise à ${form.timeTaken}` : null}
           isOpen={activeSection === TIME}
@@ -296,7 +300,7 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
               onChange={e => handleTimeChange(e.target.value)}
               required
               aria-label="Heure de prise du médicament"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl font-mono text-xl focus:outline-none focus:ring-2 focus:ring-vert focus:border-transparent transition-shadow"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl font-mono text-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
             />
             <p className="text-xs text-gray-500 mt-1.5">
               Heure à laquelle vous avez pris votre médicament{isToday ? ' ce matin' : ' ce jour-là'}
@@ -310,7 +314,7 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
                 value={form.checkInTime}
                 onChange={e => setForm(f => ({ ...f, checkInTime: e.target.value }))}
                 aria-label="Heure du point (évaluation)"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl font-mono text-base focus:outline-none focus:ring-2 focus:ring-vert focus:border-transparent transition-shadow"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl font-mono text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
               />
               <p className="text-xs text-gray-500 mt-1.5">
                 Heure du point (optionnel) — à quel moment vous faisiez l'évaluation. Sert uniquement à
@@ -323,7 +327,7 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
         {/* ── Section 2: 6 Brown dimensions ── */}
         <AccordionSection
           id="dimensions"
-          icon="🧠"
+          icon={<BrainIcon className="w-4 h-4" />}
           label="Fonctions exécutives — Brown (6 dimensions)"
           summary={dimensionsSummary(form)}
           isOpen={activeSection === DIMENSIONS_SECTION}
@@ -347,7 +351,7 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
         {/* ── Section 3: Wear-off ── */}
         <AccordionSection
           id="wear-off"
-          icon="⏱️"
+          icon={<ClockIcon className="w-4 h-4" />}
           label="Essoufflement du médicament"
           summary={WEAR_OFF_OPTIONS.find(o => o.value === form.wearOff)?.short ?? null}
           isOpen={activeSection === WEAR_OFF}
@@ -370,7 +374,7 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
                   value={opt.value}
                   checked={form.wearOff === opt.value}
                   onChange={() => handleWearOffChange(opt.value)}
-                  className="mt-0.5 accent-vert flex-shrink-0"
+                  className="mt-0.5 accent-primary flex-shrink-0"
                 />
                 <span className="text-sm leading-snug">{opt.label}</span>
               </label>
@@ -381,7 +385,7 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
         {/* ── Section 4: Side effects ── */}
         <AccordionSection
           id="side-effects"
-          icon="⚠️"
+          icon={<AlertTriangleIcon className="w-4 h-4" />}
           label="Effets secondaires"
           summary={sideEffectsSummary(form) ?? 'Aucun'}
           isOpen={activeSection === SIDE_EFFECTS_SECTION}
@@ -444,7 +448,7 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
         {/* ── Section 5: Free notes ── */}
         <AccordionSection
           id="notes"
-          icon="📝"
+          icon={<NoteIcon className="w-4 h-4" />}
           label="Notes libres"
           summary={form.notes ? `${form.notes.length} caractère${form.notes.length > 1 ? 's' : ''}` : null}
           isOpen={activeSection === NOTES}
@@ -457,7 +461,7 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
             placeholder="Quoi d'autre ? (stress, qualité du sommeil, observations…)"
             rows={3}
             aria-label="Notes libres"
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-vert focus:border-transparent transition-shadow"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
           />
           <div className="text-right text-xs text-gray-500 mt-1 font-mono">
             {form.notes.length}/500
@@ -467,7 +471,7 @@ export default function DailyCheckIn({ entries, cycle, onSave }) {
         {/* ── Submit ── */}
         <button
           type="submit"
-          className="w-full mt-6 bg-vert text-white py-4 rounded-2xl font-semibold text-base hover:bg-vert-dark transition-colors shadow-sm hover:shadow-md"
+          className="w-full mt-6 bg-primary text-white py-4 rounded-2xl font-semibold text-base hover:bg-primary-dark transition-colors shadow-sm hover:shadow-md"
         >
           {isToday ? 'Enregistrer la saisie du jour ✓' : 'Enregistrer cette journée ✓'}
         </button>
@@ -495,7 +499,7 @@ function AccordionSection({ id, icon, label, summary, isOpen, onToggle, last, ch
           onClick={onToggle}
           className="w-full flex items-center justify-between gap-3 text-left"
         >
-          <span className={`flex items-center gap-2 text-sm font-semibold ${isOpen ? 'text-vert' : 'text-gray-700'}`}>
+          <span className={`flex items-center gap-2 text-sm font-semibold ${isOpen ? 'text-primary' : 'text-gray-700'}`}>
             <span aria-hidden="true">{icon}</span>
             <span>{label}</span>
           </span>
@@ -509,7 +513,7 @@ function AccordionSection({ id, icon, label, summary, isOpen, onToggle, last, ch
               aria-hidden="true"
               viewBox="0 0 20 20"
               fill="currentColor"
-              className={`w-4 h-4 text-vert transition-transform motion-reduce:transition-none duration-200 ${isOpen ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 text-primary transition-transform motion-reduce:transition-none duration-200 ${isOpen ? 'rotate-180' : ''}`}
             >
               <path
                 fillRule="evenodd"

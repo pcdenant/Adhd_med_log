@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getEntriesLast14Days } from '../utils/calculations.js'
+import { PillIcon, PencilIcon } from './icons.jsx'
 
 export default function Header({ cycle, entries, onUpdateCycle }) {
   const [editing, setEditing] = useState(false)
@@ -27,13 +28,13 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
   }
 
   return (
-    <header className="bg-vert text-white shadow-md">
+    <header className="bg-primary text-white shadow-md">
       <div className="max-w-2xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
 
           {/* Left: medication info */}
           <div className="flex items-center gap-3 min-w-0">
-            <span className="text-2xl flex-shrink-0" aria-hidden="true">💊</span>
+            <PillIcon className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
             {editing ? (
               <div className="flex items-center gap-2 flex-wrap">
                 <input
@@ -53,7 +54,7 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
                 />
                 <button
                   onClick={handleSave}
-                  className="bg-jaune text-gray-900 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-yellow-300 transition-colors"
+                  className="bg-accent text-white px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-[#336A51] transition-colors"
                 >
                   ✓ Sauver
                 </button>
@@ -73,17 +74,17 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
                   </span>
                   <button
                     onClick={() => setEditing(true)}
-                    className="-m-3.5 p-3.5 text-white/50 hover:text-white text-sm flex-shrink-0 transition-colors"
+                    className="-m-3.5 p-3.5 text-white/50 hover:text-white flex-shrink-0 transition-colors"
                     aria-label="Modifier le médicament et le dosage"
                     title="Modifier"
                   >
-                    <span aria-hidden="true">✏️</span>
+                    <PencilIcon className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </div>
                 <div className="text-white/60 text-xs mt-0.5">
                   Cycle depuis le {formatCycleDate(cycle.cycleStartDate)}
                   {loggedToday && (
-                    <span className="ml-2 text-jaune font-medium">✓ saisi aujourd'hui</span>
+                    <span className="ml-2 text-white font-medium">✓ saisi aujourd'hui</span>
                   )}
                 </div>
               </div>
@@ -99,7 +100,7 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
               </div>
               <div className="text-white/60 text-xs mt-0.5">jours saisis</div>
               {recent.length >= 10 && (
-                <div className="text-jaune text-xs mt-0.5">Rapport dispo ✓</div>
+                <div className="text-white text-xs mt-0.5">Rapport dispo ✓</div>
               )}
             </div>
           )}

@@ -53,28 +53,29 @@ describe('Report reset flow', () => {
 })
 
 // Sourced from src/utils/severityColors.js — thresholds stay exact (tied to
-// on-screen legend copy), only the literal color values are shared now.
-describe('Report color helpers (severityColors extraction)', () => {
+// on-screen legend copy), only the literal color values follow design.md's
+// contrast-corrected palette (Option B + Style 3 migration).
+describe('Report color helpers (severityColors)', () => {
   it('dimColor buckets at the documented thresholds (< 2.5 / 2.5-3.5 / > 3.5)', () => {
     expect(dimColor(null)).toBe('#d1d5db')
-    expect(dimColor(2.4)).toBe('#ef4444')
-    expect(dimColor(2.5)).toBe('#facc15')
-    expect(dimColor(3.4)).toBe('#facc15')
-    expect(dimColor(3.5)).toBe('#16a34a')
+    expect(dimColor(2.4)).toBe('#B23B3B')
+    expect(dimColor(2.5)).toBe('#E8C93E')
+    expect(dimColor(3.4)).toBe('#E8C93E')
+    expect(dimColor(3.5)).toBe('#2F6B44')
   })
 
   it('wearOffColor buckets at the documented thresholds', () => {
-    expect(wearOffColor(1.2)).toBe('#16a34a')
-    expect(wearOffColor(1.6)).toBe('#84cc16')
-    expect(wearOffColor(2.2)).toBe('#facc15')
-    expect(wearOffColor(2.3)).toBe('#ef4444')
+    expect(wearOffColor(1.2)).toBe('#2F6B44')
+    expect(wearOffColor(1.6)).toBe('#5C7A1E')
+    expect(wearOffColor(2.2)).toBe('#E8C93E')
+    expect(wearOffColor(2.3)).toBe('#B23B3B')
   })
 
   it('heatClass buckets at the documented normalized thresholds', () => {
     expect(heatClass(null)).toBe('bg-gray-100 text-gray-500')
-    expect(heatClass(0.34)).toBe('bg-red-100 text-red-800')
-    expect(heatClass(0.35)).toBe('bg-yellow-100 text-yellow-800')
-    expect(heatClass(0.65)).toBe('bg-green-100 text-green-800')
+    expect(heatClass(0.34)).toBe('bg-[#FBEAE8] text-[#9C3C3D]')
+    expect(heatClass(0.35)).toBe('bg-[#FCF3D9] text-[#6B5814]')
+    expect(heatClass(0.65)).toBe('bg-[#EAF3EC] text-[#2F6B44]')
   })
 })
 

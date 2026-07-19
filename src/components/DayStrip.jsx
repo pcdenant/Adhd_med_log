@@ -17,11 +17,11 @@ function fullDate(key) {
 
 function cellClasses(isSelected, logged, isToday) {
   const base =
-    'rounded-xl py-2 min-h-[44px] text-center transition-colors focus:outline-none focus:ring-2 focus:ring-vert focus:ring-offset-1'
-  if (isSelected) return `${base} bg-vert text-white ring-2 ring-vert ring-offset-1`
-  const today = isToday ? ' ring-1 ring-vert' : ''
-  if (logged) return `${base} bg-vert-light text-vert-dark hover:bg-vert-light/70${today}`
-  return `${base} bg-white border border-gray-200 text-gray-500 hover:border-vert${today}`
+    'rounded-xl py-2 min-h-[44px] text-center transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1'
+  if (isSelected) return `${base} bg-primary text-white ring-2 ring-primary ring-offset-1`
+  const today = isToday ? ' ring-1 ring-primary' : ''
+  if (logged) return `${base} bg-primary-light text-primary-dark hover:bg-primary-light/70${today}`
+  return `${base} bg-white border border-gray-200 text-gray-500 hover:border-primary${today}`
 }
 
 // Compact 14-day navigator. Filled = logged, hollow = to fill; tap a day to
