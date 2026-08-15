@@ -198,6 +198,14 @@ export function calculateDayOfWeekPattern(entries) {
   }))
 }
 
+// Section F: Chronological free-text notes, most recent first
+export function calculateNotesTimeline(entries) {
+  return entries
+    .filter(e => e.notes)
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .map(e => ({ date: e.date, notes: e.notes }))
+}
+
 // Section D: Frequency and trend of each side effect
 export function calculateSideEffectFrequency(entries) {
   const n = entries.length

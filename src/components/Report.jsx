@@ -16,6 +16,7 @@ import {
   calculateDimensionAverages,
   calculateDayOfWeekPattern,
   calculateSideEffectFrequency,
+  calculateNotesTimeline,
   estimateCoverageHours,
 } from '../utils/calculations.js'
 import { hexForLevel, tintForLevel } from '../utils/severityColors.js'
@@ -304,6 +305,27 @@ function SideEffectSection({ entries }) {
   )
 }
 
+// ── Section F: Notes timeline ─────────────────────────────────────────────────
+
+function NotesSection({ entries }) {
+  const data = useMemo(() => calculateNotesTimeline(entries), [entries])
+
+  if (!data.length) {
+    return <EmptyState text="Aucune note pour l'instant." />
+  }
+
+  return (
+    <div className="space-y-3">
+      {data.map(d => (
+        <div key={d.date} className="border-l-2 border-primary-light pl-3">
+          <p className="text-xs font-mono text-gray-500">{formatDate(d.date)}</p>
+          <p className="text-sm text-gray-700 whitespace-pre-wrap">{d.notes}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ── Section E: Narrative synthesis ───────────────────────────────────────────
 
 function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, dayPattern }) {
@@ -500,46 +522,23 @@ export default function Report({ entries, cycle, onReset }) {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="mb-6 pb-4 border-b border-gray-100 flex items-start justify-between gap-4">
-        <div>
-          <h2 className="font-display text-lg font-semibold text-gray-800">Rapport 2 semaines</h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            {recent.length} saisie{recent.length !== 1 ? 's' : ''} sur les 14 derniers jours
-            {!hasEnough && (
-              <span className="text-[#8A4B1D]">
-                {' '}· encore {10 - recent.length} nécessaire{10 - recent.length > 1 ? 's' : ''}
-              </span>
-            )}
-          </p>
-        </div>
-        {!hasEnough && (
-          <div className="text-right flex-shrink-0">
-            <div className="font-mono text-2xl font-bold text-gray-500 leading-none">
-              {recent.length}<span className="text-base">/10</span>
-            </div>
-            <div className="text-xs text-gray-500 mt-0.5">min. requis</div>
-          </div>
-        )}
+      <div className="mb-6 pb-4 border-b border-gray-100">
+        <h2 className="font-display text-lg font-semibold text-gray-800">Rapport 2 semaines</h2>
+        <p className="text-xs text-gray-500 mt-0.5">
+          {recent.length} saisie{recent.length !== 1 ? 's' : ''} sur les 14 derniers jours
+          {!hasEnough && recent.length > 0 && (
+            <span> · les tendances se préciseront avec plus de données</span>
+          )}
+        </p>
       </div>
 
-      {/* Not enough data */}
-      {!hasEnough ? (
+      {/* No data yet */}
+      {recent.length === 0 ? (
         <div className="text-center py-12">
           <ChartBarIcon className="w-12 h-12 mx-auto mb-4 text-primary" aria-hidden="true" />
-          <p className="text-gray-600 text-sm mb-1">
-            Il faut au moins <strong>10 saisies</strong> sur 14 jours pour générer le rapport.
+          <p className="text-gray-600 text-sm">
+            Aucune saisie pour l'instant — complétez votre check-in du jour pour voir vos données ici.
           </p>
-          <p className="text-gray-500 text-sm mb-6">
-            Vous en avez <strong className="font-mono">{recent.length}</strong>. Encore{' '}
-            <strong>{10 - recent.length}</strong> à faire !
-          </p>
-          {/* Progress bar */}
-          <div className="max-w-xs mx-auto bg-gray-100 rounded-full h-2.5 overflow-hidden">
-            <div
-              className="bg-primary h-2.5 rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, (recent.length / 10) * 100)}%` }}
-            />
-          </div>
         </div>
       ) : (
         <div className="space-y-10">
@@ -588,6 +587,14 @@ export default function Report({ entries, cycle, onReset }) {
               sideEffects={sideEffects}
               dayPattern={dayPattern}
             />
+          </ReportSection>
+
+          <ReportSection
+            letter="F"
+            title="Notes"
+            subtitle="Notes libres saisies au fil des jours, les plus récentes en premier"
+          >
+            <NotesSection entries={recent} />
           </ReportSection>
         </div>
       )}
