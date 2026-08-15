@@ -33,7 +33,7 @@ Not a habit-tracker (Streaks, Habitica) — no gamification, no guilt-inducing e
 1. **One entry point a day, always.** Friction is the enemy of data completeness for this user; every feature request gets weighed against whether it adds a decision to the daily check-in.
 2. **Data over memory.** The report exists to replace anecdote with a physician-legible synthesis; every metric must map to something sayable out loud in an appointment.
 3. **Local and disposable by design.** No cloud, no login, no export in the MVP — the tool's simplicity is a privacy feature, not a limitation to apologize for.
-4. **Honest locked states, not hidden ones.** The report tab stays visible before the 10-entry threshold, with a live progress bar, rather than disabling or hiding it.
+4. **Show real data, honestly labeled, rather than hiding it.** The report renders from the first entry — the user has real data and wants to see it — with a discreet note below the 10-entry threshold that trends will sharpen as more data comes in, rather than blocking the report outright.
 
 ## Accessibility & Inclusion
 
@@ -65,12 +65,15 @@ Before this tool, P-C had no systematic way to evaluate whether his established 
 - Free notes, 500 characters
 - One entry per calendar day; re-visiting an already-saved day shows a read-only summary with an edit option. A 14-day strip (`DayStrip`) at the top of the check-in lets the user select **any day in the report window** to log or edit it, defaulting to today. For a backfilled past day the check-in time is an optional field (empty = excluded from the wear-off chart, never fabricated).
 
-**2-week report (`src/components/Report.jsx`, unlocks at ≥10 entries in the trailing 14 days):**
+**2-week report (`src/components/Report.jsx`, visible from the first entry):**
 - **A. Wear-off timeline** — entries bucketed by hours elapsed since dose (0-3h/3-6h/6-9h/9-12h/12h+), averaged wear-off severity per bucket, used to estimate reliable coverage hours
 - **B. Dimension averages** — 14-day mean per Brown dimension, flags anything averaging < 2.5 as a persistent challenge
 - **C. Day-of-week pattern** — composite score by weekday, heatmap
 - **D. Side-effect frequency** — count/14 days per side effect, first-half vs. second-half trend (increasing/decreasing/stable)
 - **E. Narrative synthesis** — auto-generated prose summary plus a "points à discuter avec le médecin" checklist, meant to be read at or brought to an appointment
+- **F. Notes** — chronological list of free-text notes across the trailing 14 days, most recent first
+
+Below 10 entries in the trailing 14 days, all sections still render with whatever data exists — the header just adds a discreet "les tendances se préciseront avec plus de données" note instead of blocking the report outright.
 
 **Reset:** wipes all entries and restarts the cycle date, keeps medication/dosage, requires a confirm click. This is intentionally irreversible in the MVP — see Out of scope.
 

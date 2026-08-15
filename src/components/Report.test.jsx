@@ -26,16 +26,38 @@ function recentEntries(n) {
 }
 
 describe('Report gating', () => {
-  it('blocks the report and shows progress below 10 entries', () => {
+  it('renders the report sections below 10 entries, with a discreet reliability note', () => {
     render(<Report entries={recentEntries(3)} cycle={cycle} onReset={vi.fn()} />)
-    expect(screen.getByText(/Il faut au moins/)).toBeInTheDocument()
-    expect(screen.queryByText(/Timeline d'efficacité/)).not.toBeInTheDocument()
+    expect(screen.getByText(/Timeline d'efficacité/)).toBeInTheDocument()
+    expect(screen.getByText(/les tendances se préciseront avec plus de données/)).toBeInTheDocument()
   })
 
-  it('renders the report sections at 10+ entries', () => {
+  it('renders the report sections at 10+ entries, without the reliability note', () => {
     render(<Report entries={recentEntries(10)} cycle={cycle} onReset={vi.fn()} />)
     expect(screen.getByText(/Timeline d'efficacité/)).toBeInTheDocument()
     expect(screen.getByText('Synthèse narrative')).toBeInTheDocument()
+    expect(screen.queryByText(/les tendances se préciseront avec plus de données/)).not.toBeInTheDocument()
+  })
+
+  it('shows an empty state with zero entries', () => {
+    render(<Report entries={[]} cycle={cycle} onReset={vi.fn()} />)
+    expect(screen.getByText(/Aucune saisie pour l'instant/)).toBeInTheDocument()
+    expect(screen.queryByText(/Timeline d'efficacité/)).not.toBeInTheDocument()
+  })
+})
+
+describe('Report notes section', () => {
+  it('lists entries with notes and omits entries without notes', () => {
+    const entries = recentEntries(2)
+    entries[0].notes = 'Bonne journée, focus au top'
+    entries[1].notes = ''
+    render(<Report entries={entries} cycle={cycle} onReset={vi.fn()} />)
+    expect(screen.getByText('Bonne journée, focus au top')).toBeInTheDocument()
+  })
+
+  it('shows an empty state when no entry has notes', () => {
+    render(<Report entries={recentEntries(3)} cycle={cycle} onReset={vi.fn()} />)
+    expect(screen.getByText("Aucune note pour l'instant.")).toBeInTheDocument()
   })
 })
 
