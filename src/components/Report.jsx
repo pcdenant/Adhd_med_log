@@ -19,6 +19,7 @@ import {
   calculateNotesTimeline,
   estimateCoverageHours,
   getTodayKey,
+  buildDayWindow,
 } from '../utils/calculations.js'
 import { hexForLevel, tintForLevel } from '../utils/severityColors.js'
 import {
@@ -368,7 +369,7 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
         </p>
         <p className="text-xs text-gray-500 mt-0.5">
           {entries.length} saisie{entries.length > 1 ? 's' : ''} ·{' '}
-          {formatDate(cycle.cycleStartDate)} → {formatDate(getTodayKey())}
+          {formatDate(buildDayWindow(cycle.cycleStartDate)[0])} → {formatDate(getTodayKey())}
         </p>
       </div>
 
@@ -580,7 +581,7 @@ export default function Report({ entries, cycle, onReset }) {
           <ReportSection
             letter="D"
             title="Fréquence des effets secondaires"
-            subtitle="Nombre de jours rapportés sur 14 · ↑ = tendance croissante"
+            subtitle="Nombre de saisies où l'effet est rapporté · ↑ = tendance croissante"
           >
             <SideEffectSection entries={recent} />
           </ReportSection>

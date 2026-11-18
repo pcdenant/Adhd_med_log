@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Report, { dimColor, wearOffColor, heatClass } from './Report.jsx'
+import { buildDayWindow } from '../utils/calculations.js'
 
 const cycle = { medicationName: 'Concerta', dosage: '36mg', cycleStartDate: '2026-07-10' }
 
@@ -146,5 +147,22 @@ describe('Report coverage sentence', () => {
   it('says "jusqu\'à" when it degrades later', () => {
     render(<Report entries={recentEntries(3)} cycle={cycle} onReset={vi.fn()} />) // mild at 8h
     expect(screen.getByText(/jusqu'à/)).toHaveTextContent("jusqu'à environ 6h")
+  })
+})
+
+describe('Report — no leftover 14-day hardcoding', () => {
+  const fr = (key) => new Date(key + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  it('the side-effect subtitle no longer claims a count "sur 14"', () => {
+    render(<Report entries={recentEntries(5)} cycle={cycle} onReset={vi.fn()} />)
+    expect(screen.queryByText(/sur 14/)).not.toBeInTheDocument()
+  })
+
+  it('the narrative period starts at the report window, not at an older cycle start', () => {
+    // cycle.cycleStartDate (2026-07-10) is far older than 14 days.
+    render(<Report entries={recentEntries(5)} cycle={cycle} onReset={vi.fn()} />)
+    const windowStart = buildDayWindow(cycle.cycleStartDate)[0]
+    expect(screen.getByText(new RegExp(`${fr(windowStart)} →`))).toBeInTheDocument()
+    expect(screen.queryByText(new RegExp(fr(cycle.cycleStartDate)))).not.toBeInTheDocument()
   })
 })
