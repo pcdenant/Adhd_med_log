@@ -238,6 +238,8 @@ function DayOfWeekSection({ entries }) {
 function SideEffectSection({ entries }) {
   const data = useMemo(() => calculateSideEffectFrequency(entries), [entries])
   const active = data.filter(se => se.count > 0).sort((a, b) => b.count - a.count)
+  // Denominator = days actually logged: an unlogged day is unknown, not "no side effect".
+  const n = entries.length
 
   if (!active.length) {
     return (
@@ -265,11 +267,11 @@ function SideEffectSection({ entries }) {
           margin={{ top: 4, right: 50, left: 8, bottom: 4 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-          <XAxis type="number" domain={[0, 14]} ticks={[0, 7, 14]} tick={{ fontSize: 11 }} />
+          <XAxis type="number" domain={[0, n]} allowDecimals={false} tick={{ fontSize: 11 }} />
           <YAxis type="category" dataKey="label" width={140} tick={{ fontSize: 10 }} />
           <Tooltip
             formatter={(v, _, props) => [
-              `${v} jours (${props.payload.pct}%)`,
+              `${v}/${n} saisies (${props.payload.pct}%)`,
               props.payload.fullLabel,
             ]}
           />
@@ -279,7 +281,7 @@ function SideEffectSection({ entries }) {
             <LabelList
               dataKey="count"
               position="right"
-              formatter={(v) => `${v}/14`}
+              formatter={(v) => `${v}/${n}`}
               style={{ fontSize: 11, fontFamily: 'JetBrains Mono, monospace', fill: '#4B3A63' }}
             />
           </Bar>
@@ -291,7 +293,7 @@ function SideEffectSection({ entries }) {
           <div key={se.key} className="flex items-center justify-between text-xs text-gray-600">
             <span className="flex-1 truncate mr-2">{se.label}</span>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="font-mono">{se.count}/14</span>
+              <span className="font-mono">{se.count}/{n} saisies</span>
               {se.trend === 'increasing' && (
                 <span className="text-[#9C3C3D] font-medium">↑ hausse</span>
               )}
@@ -446,7 +448,7 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
               {activeSE.slice(0, 4).map(se => (
                 <p key={se.key}>
                   • {se.label} —{' '}
-                  <span className="font-mono">{se.count}/14 jours ({se.pct}%)</span>
+                  <span className="font-mono">{se.count}/{entries.length} saisies ({se.pct}%)</span>
                   {se.trend === 'increasing' && (
                     <span className="text-[#9C3C3D] font-medium"> ↑ en hausse</span>
                   )}

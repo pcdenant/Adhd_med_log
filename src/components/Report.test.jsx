@@ -115,3 +115,14 @@ describe('Report — eyebrow pattern (quieter)', () => {
     expect(screen.getByText('Points à discuter avec le médecin').className).toMatch(/uppercase/)
   })
 })
+
+describe('Report side effects — denominator', () => {
+  it('counts side-effect days out of logged entries, not a hardcoded 14', () => {
+    const entries = recentEntries(5)
+    entries.slice(0, 3).forEach(e => { e.sideEffects.headache = true })
+    render(<Report entries={entries} cycle={cycle} onReset={vi.fn()} />)
+    expect(screen.queryByText(/3\/14/)).not.toBeInTheDocument()
+    expect(screen.getAllByText(/3\/5 saisies/).length).toBeGreaterThan(0)
+    expect(screen.getByText(/3\/5 saisies \(60%\)/)).toBeInTheDocument()
+  })
+})
