@@ -512,7 +512,10 @@ function EmptyState({ text }) {
 export default function Report({ entries, cycle, onReset }) {
   const [confirmReset, setConfirmReset] = useState(false)
 
-  const recent = useMemo(() => getEntriesLast14Days(entries), [entries])
+  const recent = useMemo(
+    () => getEntriesLast14Days(entries, cycle.cycleStartDate),
+    [entries, cycle.cycleStartDate]
+  )
   const hasEnough = recent.length >= 10
 
   const dimAvgs = useMemo(() => calculateDimensionAverages(recent), [recent])

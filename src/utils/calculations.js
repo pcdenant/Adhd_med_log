@@ -89,12 +89,11 @@ export function buildDayWindow(cycleStartDate, todayKey = getTodayKey()) {
   return keys
 }
 
-// Get entries from the last 14 calendar days
-export function getEntriesLast14Days(entries) {
-  const cutoff = new Date()
-  cutoff.setDate(cutoff.getDate() - 14)
-  cutoff.setHours(0, 0, 0, 0)
-  return entries.filter(e => new Date(e.date + 'T12:00:00') >= cutoff)
+// Entries inside the report window — the same 14 days the DayStrip shows
+// (buildDayWindow), so the report and the strip never disagree on "the period".
+export function getEntriesLast14Days(entries, cycleStartDate) {
+  const window = new Set(buildDayWindow(cycleStartDate))
+  return entries.filter(e => window.has(e.date))
 }
 
 // Convert HH:MM string to minutes since midnight

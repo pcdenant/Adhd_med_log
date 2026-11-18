@@ -127,18 +127,20 @@ describe('getEntriesLast14Days', () => {
   beforeEach(() => vi.setSystemTime(new Date('2026-07-18T10:00:00')))
   afterEach(() => vi.useRealTimers())
 
-  it('keeps today and the 14-day-old boundary, drops older', () => {
+  it('keeps exactly the 14 days of the day strip (today + 13), drops older', () => {
     const entries = [
       entry({ date: '2026-07-18' }), // today
-      entry({ date: '2026-07-04' }), // 14 days ago (boundary, kept)
-      entry({ date: '2026-07-03' }), // 15 days ago (dropped)
+      entry({ date: '2026-07-05' }), // 13 days ago (14th day, kept)
+      entry({ date: '2026-07-04' }), // 14 days ago (15th day, dropped)
       entry({ date: '2026-06-01' }), // long ago (dropped)
     ]
     const kept = getEntriesLast14Days(entries).map(e => e.date)
-    expect(kept).toContain('2026-07-18')
-    expect(kept).toContain('2026-07-04')
-    expect(kept).not.toContain('2026-07-03')
-    expect(kept).not.toContain('2026-06-01')
+    expect(kept).toEqual(['2026-07-18', '2026-07-05'])
+  })
+
+  it('never keeps entries from before the cycle start', () => {
+    const entries = [entry({ date: '2026-07-15' }), entry({ date: '2026-07-10' })]
+    expect(getEntriesLast14Days(entries, '2026-07-12').map(e => e.date)).toEqual(['2026-07-15'])
   })
 
   it('returns an empty array when nothing is recent', () => {

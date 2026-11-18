@@ -7,7 +7,7 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
   const [medName, setMedName] = useState(cycle.medicationName)
   const [dosage, setDosage] = useState(cycle.dosage)
 
-  const recent = getEntriesLast14Days(entries)
+  const recent = getEntriesLast14Days(entries, cycle.cycleStartDate)
   const today = getTodayKey()
   const loggedToday = entries.some(e => e.date === today)
 
