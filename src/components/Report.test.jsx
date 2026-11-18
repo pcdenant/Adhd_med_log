@@ -126,3 +126,25 @@ describe('Report side effects — denominator', () => {
     expect(screen.getByText(/3\/5 saisies \(60%\)/)).toBeInTheDocument()
   })
 })
+
+describe('Report coverage sentence', () => {
+  const withWearOff = (timeLogged, wearOff) =>
+    recentEntries(3).map(e => ({ ...e, timeLogged, wearOff }))
+
+  it('says "au moins" when coverage never degrades', () => {
+    render(<Report entries={withWearOff('18:00', 'none')} cycle={cycle} onReset={vi.fn()} />)
+    expect(screen.getByText(/au moins/)).toHaveTextContent('au moins 12h')
+  })
+
+  it('says "moins de 3h" — short — when it degrades right away', () => {
+    render(<Report entries={withWearOff('09:00', 'strong')} cycle={cycle} onReset={vi.fn()} />)
+    const p = screen.getByText(/moins de/)
+    expect(p).toHaveTextContent('moins de 3h')
+    expect(p).toHaveTextContent('Durée courte')
+  })
+
+  it('says "jusqu\'à" when it degrades later', () => {
+    render(<Report entries={recentEntries(3)} cycle={cycle} onReset={vi.fn()} />) // mild at 8h
+    expect(screen.getByText(/jusqu'à/)).toHaveTextContent("jusqu'à environ 6h")
+  })
+})

@@ -145,21 +145,28 @@ export function calculateWearOffTimeline(entries) {
   return bucketData.filter(Boolean)
 }
 
-// Estimate how many hours the medication provides reliable coverage
+// Estimate how long the medication provides reliable coverage.
+// Returns { kind, hours } so the report can say how sure the number is:
+//   upTo     — degrades in a later bucket: reliable until that bucket starts
+//   lessThan — degrades already in 0–3h: under 3h
+//   atLeast  — never degrades: at least until the last logged bucket ends
+//              (12h+ is open-ended, so capped at 12)
 export function estimateCoverageHours(wearOffTimeline) {
   if (!wearOffTimeline.length) return null
 
-  const bucketHourStart = { '0–3h': 0, '3–6h': 3, '6–9h': 6, '9–12h': 9, '12h+': 12 }
+  const bucketHours = {
+    '0–3h': [0, 3], '3–6h': [3, 6], '6–9h': [6, 9], '9–12h': [9, 12], '12h+': [12, 12],
+  }
 
   for (const bucket of wearOffTimeline) {
     // avgWearOff > 1.5 means wear-off starting (between none and mild)
     if (bucket.avgWearOff > 1.5) {
-      return bucketHourStart[bucket.label] ?? null
+      const [start, end] = bucketHours[bucket.label]
+      return start === 0 ? { kind: 'lessThan', hours: end } : { kind: 'upTo', hours: start }
     }
   }
-  // All buckets look good — return the last bucket's start hour
   const last = wearOffTimeline[wearOffTimeline.length - 1]
-  return bucketHourStart[last.label] ?? null
+  return { kind: 'atLeast', hours: bucketHours[last.label][1] }
 }
 
 // Section B: Average each dimension across entries

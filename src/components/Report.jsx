@@ -331,6 +331,14 @@ function NotesSection({ entries }) {
 
 // ── Section E: Narrative synthesis ───────────────────────────────────────────
 
+function coverageVerdict({ kind, hours }) {
+  if (kind === 'lessThan' || (kind === 'upTo' && hours <= 5)) return ' Durée courte — à discuter avec le médecin.'
+  if (hours >= 8) return ' Bonne durée de couverture journalière.'
+  // "at least 3h/6h" only means nothing later in the day was logged yet — not a short duration.
+  if (kind === 'atLeast') return ' Pas encore de saisie plus tard dans la journée pour situer la fin.'
+  return ' Durée standard.'
+}
+
 function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, dayPattern }) {
   const coverage = estimateCoverageHours(wearOffData)
   const sorted = [...dimAvgs].sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0))
@@ -372,13 +380,10 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
         content={
           coverage != null ? (
             <p>
-              Couverture fiable estimée à environ{' '}
-              <strong className="font-mono">{coverage}h</strong> après la prise.
-              {coverage <= 5
-                ? " Durée courte — à discuter avec le médecin."
-                : coverage >= 8
-                ? " Bonne durée de couverture journalière."
-                : " Durée standard."}
+              Couverture fiable estimée{' '}
+              {{ upTo: "jusqu'à environ", atLeast: 'à au moins', lessThan: 'à moins de' }[coverage.kind]}{' '}
+              <strong className="font-mono">{coverage.hours}h</strong> après la prise.
+              {coverageVerdict(coverage)}
             </p>
           ) : (
             <p className="italic text-gray-500">
