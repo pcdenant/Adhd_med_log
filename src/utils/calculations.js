@@ -119,6 +119,40 @@ export function getEntriesLast14Days(entries, cycleStartDate) {
   return entries.filter(e => window.has(e.date))
 }
 
+// The three required answers of a daily entry, in form order. Side effects and
+// notes are optional and never make an entry incomplete.
+export const REQUIRED_ANSWERS = [
+  { key: 'time', label: 'heure de prise' },
+  { key: 'dimensions', label: 'fonctions exécutives' },
+  { key: 'wearOff', label: 'essoufflement' },
+]
+
+const isTime = (v) => typeof v === 'string' && /^\d{2}:\d{2}$/.test(v)
+
+// Keys of REQUIRED_ANSWERS still missing from `entry`, in form order. The one
+// definition of "complete" — the form, the day strip, the header and the
+// report all go through this.
+export function missingRequired(entry) {
+  const missing = []
+  if (!isTime(entry?.timeTaken)) missing.push('time')
+  if (!DIMENSIONS.every(d => typeof entry?.dimensions?.[d.key] === 'number')) missing.push('dimensions')
+  if (!['none', 'mild', 'strong'].includes(entry?.wearOff)) missing.push('wearOff')
+  return missing
+}
+
+export function isCompleteEntry(entry) {
+  return missingRequired(entry).length === 0
+}
+
+// The usual dose time offered as a one-tap chip: `timeTaken` of the most
+// recent entry dated before `dateKey` that has one. null when there is none.
+export function usualDoseTime(entries, dateKey) {
+  const previous = entries
+    .filter(e => e.date < dateKey && isTime(e.timeTaken))
+    .sort((a, b) => b.date.localeCompare(a.date))
+  return previous[0]?.timeTaken ?? null
+}
+
 // Convert HH:MM string to minutes since midnight
 export function timeToMinutes(timeStr) {
   if (!timeStr) return null

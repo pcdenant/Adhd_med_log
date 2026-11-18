@@ -12,6 +12,7 @@ import {
 } from 'recharts'
 import {
   getEntriesLast14Days,
+  isCompleteEntry,
   calculateWearOffTimeline,
   calculateDimensionAverages,
   calculateDayOfWeekPattern,
@@ -524,8 +525,10 @@ function EmptyState({ text }) {
 export default function Report({ entries, cycle, onReset }) {
   const [confirmReset, setConfirmReset] = useState(false)
 
+  // Complete entries only: an incomplete (older) entry is not a "saisie", so
+  // it never enters a denominator (issue #23).
   const recent = useMemo(
-    () => getEntriesLast14Days(entries, cycle.cycleStartDate),
+    () => getEntriesLast14Days(entries, cycle.cycleStartDate).filter(isCompleteEntry),
     [entries, cycle.cycleStartDate]
   )
   const hasEnough = recent.length >= 10

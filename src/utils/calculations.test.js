@@ -11,6 +11,9 @@ import {
   calculateDimensionAverages,
   calculateDayOfWeekPattern,
   calculateSideEffectFrequency,
+  missingRequired,
+  isCompleteEntry,
+  usualDoseTime,
 } from './calculations.js'
 
 // A fully-formed entry, so each test only overrides the fields it cares about.
@@ -282,5 +285,39 @@ describe('calculateSideEffectFrequency', () => {
     const result = calculateSideEffectFrequency([])
     expect(result).toHaveLength(7)
     expect(result.every(s => s.count === 0 && s.pct === 0 && s.trend === 'stable')).toBe(true)
+  })
+})
+
+describe('complete entry rule (issue #23)', () => {
+  it('a full entry is complete; side effects and notes are not required', () => {
+    expect(isCompleteEntry(entry({ sideEffects: undefined, notes: undefined }))).toBe(true)
+  })
+
+  it('lists the missing required answers in form order', () => {
+    expect(missingRequired({ date: '2026-07-15' })).toEqual(['time', 'dimensions', 'wearOff'])
+    expect(missingRequired(entry({ timeTaken: '' }))).toEqual(['time'])
+    expect(missingRequired(entry({ dimensions: { focus: 3 } }))).toEqual(['dimensions'])
+    expect(missingRequired(entry({ wearOff: null }))).toEqual(['wearOff'])
+  })
+
+  it('an older time-only entry is incomplete', () => {
+    expect(isCompleteEntry(entry({ dimensions: {}, wearOff: undefined }))).toBe(false)
+  })
+})
+
+describe('usualDoseTime', () => {
+  it('returns the dose time of the most recent earlier entry that has one', () => {
+    const entries = [
+      entry({ date: '2026-07-10', timeTaken: '08:00' }),
+      entry({ date: '2026-07-13', timeTaken: '07:45' }),
+      entry({ date: '2026-07-14', timeTaken: '' }),
+      entry({ date: '2026-07-16', timeTaken: '09:00' }),
+    ]
+    expect(usualDoseTime(entries, '2026-07-15')).toBe('07:45')
+  })
+
+  it('returns null when no earlier entry has a dose time', () => {
+    expect(usualDoseTime([], '2026-07-15')).toBeNull()
+    expect(usualDoseTime([entry({ date: '2026-07-16' })], '2026-07-15')).toBeNull()
   })
 })

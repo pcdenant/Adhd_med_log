@@ -106,3 +106,18 @@ test('onboarding controls are 44px+ and fields are 16px+ (no iOS zoom on focus)'
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
 })
+
+test('every check-in accordion header is a 44px+ full-width row at 390px', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await seed(page)
+  await page.goto('/')
+
+  const headers = page.locator('h3 > button[aria-controls^="checkin-panel-"]')
+  expect(await headers.count()).toBe(5)
+  for (const header of await headers.all()) {
+    const box = await header.boundingBox()
+    expect(box.height, await header.textContent()).toBeGreaterThanOrEqual(44)
+    expect(box.width).toBeGreaterThanOrEqual(300)
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
+})

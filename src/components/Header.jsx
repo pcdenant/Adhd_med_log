@@ -1,15 +1,18 @@
 import { useState } from 'react'
-import { getEntriesLast14Days, getTodayKey } from '../utils/calculations.js'
+import { getEntriesLast14Days, getTodayKey, buildDayWindow, isCompleteEntry } from '../utils/calculations.js'
 import { PillIcon, PencilIcon } from './icons.jsx'
+import Portee from './Portee.jsx'
 
 export default function Header({ cycle, entries, onUpdateCycle }) {
   const [editing, setEditing] = useState(false)
   const [medName, setMedName] = useState(cycle.medicationName)
   const [dosage, setDosage] = useState(cycle.dosage)
 
-  const recent = getEntriesLast14Days(entries, cycle.cycleStartDate)
+  // Only complete entries count as "saisi" (isCompleteEntry).
+  const recent = getEntriesLast14Days(entries, cycle.cycleStartDate).filter(isCompleteEntry)
   const today = getTodayKey()
-  const loggedToday = entries.some(e => e.date === today)
+  const loggedToday = recent.some(e => e.date === today)
+  const completeDates = new Set(recent.map(e => e.date))
 
   const handleSave = () => {
     onUpdateCycle({ medicationName: medName.trim() || cycle.medicationName, dosage: dosage.trim() || cycle.dosage })
@@ -91,19 +94,24 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
             )}
           </div>
 
-          {/* Right: progress counter */}
-          {!editing && (
-            <div className="text-right flex-shrink-0">
-              <div className="font-mono font-bold text-2xl leading-none">
-                {recent.length}
-                <span className="text-white/50 text-base font-normal">/14</span>
-              </div>
-              <div className="text-white/60 text-xs mt-0.5">jours saisis</div>
-              {recent.length >= 10 && (
-                <div className="text-white text-xs mt-0.5">Rapport dispo ✓</div>
-              )}
-            </div>
+          {/* Right: report readiness */}
+          {!editing && recent.length >= 10 && (
+            <div className="text-white text-xs flex-shrink-0">Rapport dispo ✓</div>
           )}
+        </div>
+
+        {/* Portée: the 14 days at a glance, exact count kept as text. */}
+        <div className="flex items-center gap-3 mt-3">
+          <Portee
+            days={buildDayWindow(cycle.cycleStartDate, today)}
+            completeDates={completeDates}
+            todayKey={today}
+            tone="dark"
+            className="flex-1"
+          />
+          <span className="text-white/80 text-xs flex-shrink-0">
+            <span className="font-mono font-bold text-white">{recent.length}</span> sur 14 jours
+          </span>
         </div>
       </div>
     </header>
