@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getEntriesLast14Days } from '../utils/calculations.js'
+import { getEntriesLast14Days, getTodayKey } from '../utils/calculations.js'
 import { PillIcon, PencilIcon } from './icons.jsx'
 
 export default function Header({ cycle, entries, onUpdateCycle }) {
@@ -7,8 +7,8 @@ export default function Header({ cycle, entries, onUpdateCycle }) {
   const [medName, setMedName] = useState(cycle.medicationName)
   const [dosage, setDosage] = useState(cycle.dosage)
 
-  const recent = getEntriesLast14Days(entries)
-  const today = new Date().toISOString().split('T')[0]
+  const recent = getEntriesLast14Days(entries, cycle.cycleStartDate)
+  const today = getTodayKey()
   const loggedToday = entries.some(e => e.date === today)
 
   const handleSave = () => {

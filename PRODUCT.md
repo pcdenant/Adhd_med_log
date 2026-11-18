@@ -66,10 +66,10 @@ Before this tool, P-C had no systematic way to evaluate whether his established 
 - One entry per calendar day; re-visiting an already-saved day shows a read-only summary with an edit option. A 14-day strip (`DayStrip`) at the top of the check-in lets the user select **any day in the report window** to log or edit it, defaulting to today. For a backfilled past day the check-in time is an optional field (empty = excluded from the wear-off chart, never fabricated).
 
 **2-week report (`src/components/Report.jsx`, visible from the first entry):**
-- **A. Wear-off timeline** — entries bucketed by hours elapsed since dose (0-3h/3-6h/6-9h/9-12h/12h+), averaged wear-off severity per bucket, used to estimate reliable coverage hours
+- **A. Wear-off timeline** — entries bucketed by hours elapsed since dose (0-3h/3-6h/6-9h/9-12h/12h+), averaged wear-off severity per bucket, used to estimate reliable coverage hours ("jusqu'à environ Xh", "moins de 3h", or "au moins Xh" when nothing degrades yet)
 - **B. Dimension averages** — 14-day mean per Brown dimension, flags anything averaging < 2.5 as a persistent challenge
 - **C. Day-of-week pattern** — composite score by weekday, heatmap
-- **D. Side-effect frequency** — count/14 days per side effect, first-half vs. second-half trend (increasing/decreasing/stable)
+- **D. Side-effect frequency** — count out of logged entries per side effect ("3/5 saisies (60%)" — an unlogged day isn't counted as a day without the effect), first-half vs. second-half trend (increasing/decreasing/stable)
 - **E. Narrative synthesis** — auto-generated prose summary plus a "points à discuter avec le médecin" checklist, meant to be read at or brought to an appointment
 - **F. Notes** — chronological list of free-text notes across the trailing 14 days, most recent first
 

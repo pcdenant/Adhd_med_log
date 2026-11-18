@@ -18,6 +18,8 @@ import {
   calculateSideEffectFrequency,
   calculateNotesTimeline,
   estimateCoverageHours,
+  getTodayKey,
+  buildDayWindow,
 } from '../utils/calculations.js'
 import { hexForLevel, tintForLevel } from '../utils/severityColors.js'
 import {
@@ -237,6 +239,8 @@ function DayOfWeekSection({ entries }) {
 function SideEffectSection({ entries }) {
   const data = useMemo(() => calculateSideEffectFrequency(entries), [entries])
   const active = data.filter(se => se.count > 0).sort((a, b) => b.count - a.count)
+  // Denominator = days actually logged: an unlogged day is unknown, not "no side effect".
+  const n = entries.length
 
   if (!active.length) {
     return (
@@ -264,11 +268,11 @@ function SideEffectSection({ entries }) {
           margin={{ top: 4, right: 50, left: 8, bottom: 4 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-          <XAxis type="number" domain={[0, 14]} ticks={[0, 7, 14]} tick={{ fontSize: 11 }} />
+          <XAxis type="number" domain={[0, n]} allowDecimals={false} tick={{ fontSize: 11 }} />
           <YAxis type="category" dataKey="label" width={140} tick={{ fontSize: 10 }} />
           <Tooltip
             formatter={(v, _, props) => [
-              `${v} jours (${props.payload.pct}%)`,
+              `${v}/${n} saisies (${props.payload.pct}%)`,
               props.payload.fullLabel,
             ]}
           />
@@ -278,7 +282,7 @@ function SideEffectSection({ entries }) {
             <LabelList
               dataKey="count"
               position="right"
-              formatter={(v) => `${v}/14`}
+              formatter={(v) => `${v}/${n}`}
               style={{ fontSize: 11, fontFamily: 'JetBrains Mono, monospace', fill: '#4B3A63' }}
             />
           </Bar>
@@ -290,7 +294,7 @@ function SideEffectSection({ entries }) {
           <div key={se.key} className="flex items-center justify-between text-xs text-gray-600">
             <span className="flex-1 truncate mr-2">{se.label}</span>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="font-mono">{se.count}/14</span>
+              <span className="font-mono">{se.count}/{n} saisies</span>
               {se.trend === 'increasing' && (
                 <span className="text-[#9C3C3D] font-medium">↑ hausse</span>
               )}
@@ -328,6 +332,14 @@ function NotesSection({ entries }) {
 
 // ── Section E: Narrative synthesis ───────────────────────────────────────────
 
+function coverageVerdict({ kind, hours }) {
+  if (kind === 'lessThan' || (kind === 'upTo' && hours <= 5)) return ' Durée courte — à discuter avec le médecin.'
+  if (hours >= 8) return ' Bonne durée de couverture journalière.'
+  // "at least 3h/6h" only means nothing later in the day was logged yet — not a short duration.
+  if (kind === 'atLeast') return ' Pas encore de saisie plus tard dans la journée pour situer la fin.'
+  return ' Durée standard.'
+}
+
 function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, dayPattern }) {
   const coverage = estimateCoverageHours(wearOffData)
   const sorted = [...dimAvgs].sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0))
@@ -357,7 +369,7 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
         </p>
         <p className="text-xs text-gray-500 mt-0.5">
           {entries.length} saisie{entries.length > 1 ? 's' : ''} ·{' '}
-          {formatDate(cycle.cycleStartDate)} → {formatDate(new Date().toISOString().split('T')[0])}
+          {formatDate(buildDayWindow(cycle.cycleStartDate)[0])} → {formatDate(getTodayKey())}
         </p>
       </div>
 
@@ -369,13 +381,10 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
         content={
           coverage != null ? (
             <p>
-              Couverture fiable estimée à environ{' '}
-              <strong className="font-mono">{coverage}h</strong> après la prise.
-              {coverage <= 5
-                ? " Durée courte — à discuter avec le médecin."
-                : coverage >= 8
-                ? " Bonne durée de couverture journalière."
-                : " Durée standard."}
+              Couverture fiable estimée{' '}
+              {{ upTo: "jusqu'à environ", atLeast: 'à au moins', lessThan: 'à moins de' }[coverage.kind]}{' '}
+              <strong className="font-mono">{coverage.hours}h</strong> après la prise.
+              {coverageVerdict(coverage)}
             </p>
           ) : (
             <p className="italic text-gray-500">
@@ -445,7 +454,7 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
               {activeSE.slice(0, 4).map(se => (
                 <p key={se.key}>
                   • {se.label} —{' '}
-                  <span className="font-mono">{se.count}/14 jours ({se.pct}%)</span>
+                  <span className="font-mono">{se.count}/{entries.length} saisies ({se.pct}%)</span>
                   {se.trend === 'increasing' && (
                     <span className="text-[#9C3C3D] font-medium"> ↑ en hausse</span>
                   )}
@@ -511,7 +520,10 @@ function EmptyState({ text }) {
 export default function Report({ entries, cycle, onReset }) {
   const [confirmReset, setConfirmReset] = useState(false)
 
-  const recent = useMemo(() => getEntriesLast14Days(entries), [entries])
+  const recent = useMemo(
+    () => getEntriesLast14Days(entries, cycle.cycleStartDate),
+    [entries, cycle.cycleStartDate]
+  )
   const hasEnough = recent.length >= 10
 
   const dimAvgs = useMemo(() => calculateDimensionAverages(recent), [recent])
@@ -569,7 +581,7 @@ export default function Report({ entries, cycle, onReset }) {
           <ReportSection
             letter="D"
             title="Fréquence des effets secondaires"
-            subtitle="Nombre de jours rapportés sur 14 · ↑ = tendance croissante"
+            subtitle="Nombre de saisies où l'effet est rapporté · ↑ = tendance croissante"
           >
             <SideEffectSection entries={recent} />
           </ReportSection>

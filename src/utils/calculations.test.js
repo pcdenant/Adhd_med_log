@@ -68,8 +68,16 @@ describe('domain constants', () => {
 })
 
 describe('getTodayKey', () => {
+  afterEach(() => vi.useRealTimers())
+
   it('returns an ISO YYYY-MM-DD date key', () => {
     expect(getTodayKey()).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  it('uses the local date, not UTC, in the evening', () => {
+    // 20:30 in Montréal on July 18 is already July 19 in UTC.
+    vi.setSystemTime(new Date(2026, 6, 18, 20, 30))
+    expect(getTodayKey()).toBe('2026-07-18')
   })
 })
 
@@ -119,18 +127,20 @@ describe('getEntriesLast14Days', () => {
   beforeEach(() => vi.setSystemTime(new Date('2026-07-18T10:00:00')))
   afterEach(() => vi.useRealTimers())
 
-  it('keeps today and the 14-day-old boundary, drops older', () => {
+  it('keeps exactly the 14 days of the day strip (today + 13), drops older', () => {
     const entries = [
       entry({ date: '2026-07-18' }), // today
-      entry({ date: '2026-07-04' }), // 14 days ago (boundary, kept)
-      entry({ date: '2026-07-03' }), // 15 days ago (dropped)
+      entry({ date: '2026-07-05' }), // 13 days ago (14th day, kept)
+      entry({ date: '2026-07-04' }), // 14 days ago (15th day, dropped)
       entry({ date: '2026-06-01' }), // long ago (dropped)
     ]
     const kept = getEntriesLast14Days(entries).map(e => e.date)
-    expect(kept).toContain('2026-07-18')
-    expect(kept).toContain('2026-07-04')
-    expect(kept).not.toContain('2026-07-03')
-    expect(kept).not.toContain('2026-06-01')
+    expect(kept).toEqual(['2026-07-18', '2026-07-05'])
+  })
+
+  it('never keeps entries from before the cycle start', () => {
+    const entries = [entry({ date: '2026-07-15' }), entry({ date: '2026-07-10' })]
+    expect(getEntriesLast14Days(entries, '2026-07-12').map(e => e.date)).toEqual(['2026-07-15'])
   })
 
   it('returns an empty array when nothing is recent', () => {
@@ -170,23 +180,32 @@ describe('calculateWearOffTimeline', () => {
 })
 
 describe('estimateCoverageHours', () => {
-  it('returns the hour where wear-off first passes mild', () => {
-    const timeline = calculateWearOffTimeline([
-      entry({ timeTaken: '08:00', timeLogged: '09:00', wearOff: 'none' }),   // 0–3h, 1
-      entry({ timeTaken: '08:00', timeLogged: '12:00', wearOff: 'strong' }), // 3–6h, 3 (>1.5)
-    ])
-    expect(estimateCoverageHours(timeline)).toBe(3)
+  const timelineOf = (...pairs) =>
+    calculateWearOffTimeline(pairs.map(([timeLogged, wearOff]) =>
+      entry({ timeTaken: '08:00', timeLogged, wearOff })))
+
+  it('reports "up to" the start of the first degraded bucket', () => {
+    const timeline = timelineOf(['09:00', 'none'], ['12:00', 'strong']) // 0–3h ok, 3–6h bad
+    expect(estimateCoverageHours(timeline)).toEqual({ kind: 'upTo', hours: 3 })
+  })
+
+  it('reports "at least" the end of the last bucket when nothing degrades', () => {
+    const timeline = timelineOf(['09:00', 'none'], ['18:00', 'none']) // 0–3h, 9–12h ok
+    expect(estimateCoverageHours(timeline)).toEqual({ kind: 'atLeast', hours: 12 })
+  })
+
+  it('caps "at least" at 12h for the open-ended 12h+ bucket', () => {
+    const timeline = timelineOf(['21:00', 'none']) // 13h, ok
+    expect(estimateCoverageHours(timeline)).toEqual({ kind: 'atLeast', hours: 12 })
+  })
+
+  it('reports "less than 3h" when it already degrades in the first bucket', () => {
+    const timeline = timelineOf(['10:00', 'strong']) // 0–3h bad
+    expect(estimateCoverageHours(timeline)).toEqual({ kind: 'lessThan', hours: 3 })
   })
 
   it('returns null for an empty timeline', () => {
     expect(estimateCoverageHours([])).toBeNull()
-  })
-
-  it('falls back to the last bucket start when coverage never degrades', () => {
-    const timeline = calculateWearOffTimeline([
-      entry({ timeTaken: '08:00', timeLogged: '09:00', wearOff: 'none' }), // 0–3h only
-    ])
-    expect(estimateCoverageHours(timeline)).toBe(0)
   })
 })
 

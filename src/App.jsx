@@ -4,6 +4,7 @@ import DailyCheckIn from './components/DailyCheckIn.jsx'
 import Report from './components/Report.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import { AlertTriangleIcon, XIcon } from './components/icons.jsx'
+import { getTodayKey } from './utils/calculations.js'
 
 const STORAGE_KEY = 'ammt_v2'
 
@@ -54,7 +55,7 @@ export default function App() {
       cycle: {
         medicationName,
         dosage,
-        cycleStartDate: new Date().toISOString().split('T')[0],
+        cycleStartDate: getTodayKey(),
         createdAt: new Date().toISOString(),
       },
       entries: [],
@@ -77,7 +78,7 @@ export default function App() {
     persist({
       cycle: {
         ...cycle,
-        cycleStartDate: new Date().toISOString().split('T')[0],
+        cycleStartDate: getTodayKey(),
         createdAt: new Date().toISOString(),
       },
       entries: [],

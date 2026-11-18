@@ -2,8 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, within, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import DailyCheckIn from './DailyCheckIn.jsx'
+import { getTodayKey } from '../utils/calculations.js'
 
-const today = new Date().toISOString().split('T')[0]
+const today = getTodayKey()
 
 describe('DailyCheckIn', () => {
   it('renders the entry form when today has no entry yet', () => {

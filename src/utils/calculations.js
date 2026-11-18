@@ -58,10 +58,13 @@ export const SIDE_EFFECTS = [
 export const DAYS_SHORT = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
 export const DAYS_FULL = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
 
-// Today's entry key (YYYY-MM-DD). Kept here so the daily form and the
-// missing-day window agree on what "today" is.
+// Today's entry key (YYYY-MM-DD) in the user's LOCAL timezone. Kept here so
+// the daily form and the missing-day window agree on what "today" is.
+// Not toISOString(): that's UTC, which in Montréal flips to tomorrow after 19h.
 export function getTodayKey() {
-  return new Date().toISOString().split('T')[0]
+  const d = new Date()
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
 // Shift a YYYY-MM-DD key by whole days, anchored at UTC noon so the result is
@@ -86,12 +89,11 @@ export function buildDayWindow(cycleStartDate, todayKey = getTodayKey()) {
   return keys
 }
 
-// Get entries from the last 14 calendar days
-export function getEntriesLast14Days(entries) {
-  const cutoff = new Date()
-  cutoff.setDate(cutoff.getDate() - 14)
-  cutoff.setHours(0, 0, 0, 0)
-  return entries.filter(e => new Date(e.date + 'T12:00:00') >= cutoff)
+// Entries inside the report window — the same 14 days the DayStrip shows
+// (buildDayWindow), so the report and the strip never disagree on "the period".
+export function getEntriesLast14Days(entries, cycleStartDate) {
+  const window = new Set(buildDayWindow(cycleStartDate))
+  return entries.filter(e => window.has(e.date))
 }
 
 // Convert HH:MM string to minutes since midnight
@@ -143,21 +145,28 @@ export function calculateWearOffTimeline(entries) {
   return bucketData.filter(Boolean)
 }
 
-// Estimate how many hours the medication provides reliable coverage
+// Estimate how long the medication provides reliable coverage.
+// Returns { kind, hours } so the report can say how sure the number is:
+//   upTo     — degrades in a later bucket: reliable until that bucket starts
+//   lessThan — degrades already in 0–3h: under 3h
+//   atLeast  — never degrades: at least until the last logged bucket ends
+//              (12h+ is open-ended, so capped at 12)
 export function estimateCoverageHours(wearOffTimeline) {
   if (!wearOffTimeline.length) return null
 
-  const bucketHourStart = { '0–3h': 0, '3–6h': 3, '6–9h': 6, '9–12h': 9, '12h+': 12 }
+  const bucketHours = {
+    '0–3h': [0, 3], '3–6h': [3, 6], '6–9h': [6, 9], '9–12h': [9, 12], '12h+': [12, 12],
+  }
 
   for (const bucket of wearOffTimeline) {
     // avgWearOff > 1.5 means wear-off starting (between none and mild)
     if (bucket.avgWearOff > 1.5) {
-      return bucketHourStart[bucket.label] ?? null
+      const [start, end] = bucketHours[bucket.label]
+      return start === 0 ? { kind: 'lessThan', hours: end } : { kind: 'upTo', hours: start }
     }
   }
-  // All buckets look good — return the last bucket's start hour
   const last = wearOffTimeline[wearOffTimeline.length - 1]
-  return bucketHourStart[last.label] ?? null
+  return { kind: 'atLeast', hours: bucketHours[last.label][1] }
 }
 
 // Section B: Average each dimension across entries

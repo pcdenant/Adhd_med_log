@@ -40,12 +40,14 @@ State only ever flows one way: `App.jsx` is the single source of truth, passed d
 
 Pure functions, no side effects, all take `entries` (or a filtered subset) and return derived data for the report. This is the only place that should know about bucket boundaries, dimension keys, or trend thresholds — components should stay presentation-only and call into here rather than re-deriving stats inline.
 
-- `getEntriesLast14Days` — the rolling-window filter every report calculation is built on
+- `getTodayKey` — today's `YYYY-MM-DD` key in the user's **local** timezone (never `toISOString()`, which is UTC and flips to tomorrow after ~19h in Montréal); every "today" in the app goes through it, including the cycle start date
+- `buildDayWindow` — the single definition of "the 14-day period": today back to max(cycle start, today − 13), never in the future; drives both the `DayStrip` and the report
+- `getEntriesLast14Days(entries, cycleStartDate)` — the window filter every report calculation is built on; keeps only entries whose date is in `buildDayWindow`, so it can hold fewer than 14 days on a young cycle
 - `calculateWearOffTimeline` — buckets entries by hours-since-dose (0-3/3-6/6-9/9-12/12+), averages wear-off severity per bucket
-- `estimateCoverageHours` — walks the timeline buckets, returns the hour mark where wear-off starts trending past "mild"
+- `estimateCoverageHours` — walks the timeline buckets, returns `{ kind, hours }`: `upTo` (wear-off passes "mild" in a later bucket → reliable until that bucket starts), `lessThan` (already in 0–3h → under 3h), or `atLeast` (never degrades → end of the last logged bucket, 12h+ capped at 12); `null` on an empty timeline. The report words it "jusqu'à environ / moins de / au moins Xh"
 - `calculateDimensionAverages` — mean per Brown dimension across the given entries
 - `calculateDayOfWeekPattern` — composite (all-dimension) average grouped by weekday
-- `calculateSideEffectFrequency` — count + percentage + first-half-vs-second-half trend per side effect
+- `calculateSideEffectFrequency` — count + percentage + first-half-vs-second-half trend per side effect; the denominator is the number of entries logged in the window (an unlogged day is unknown, not "no side effect")
 
 `DIMENSIONS` and `SIDE_EFFECTS` (also exported from this file) are the single source of truth for both the daily form's fields and the report's labels — components map over these arrays rather than hardcoding the six/seven items twice.
 

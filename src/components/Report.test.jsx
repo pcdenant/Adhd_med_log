@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Report, { dimColor, wearOffColor, heatClass } from './Report.jsx'
+import { buildDayWindow } from '../utils/calculations.js'
 
 const cycle = { medicationName: 'Concerta', dosage: '36mg', cycleStartDate: '2026-07-10' }
 
@@ -12,7 +13,7 @@ function recentEntries(n) {
     const d = new Date()
     d.setDate(d.getDate() - i)
     out.push({
-      date: d.toISOString().split('T')[0],
+      date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, // local key, like getTodayKey
       timeTaken: '08:00',
       timeLogged: '16:00',
       dimensions: { focus: 3, taskInitiation: 3, emotionalRegulation: 3, impulseControl: 3, workingMemory: 3, timeAwareness: 3 },
@@ -113,5 +114,55 @@ describe('Report — eyebrow pattern (quieter)', () => {
     // "Points à discuter avec le médecin" was explicitly out of scope for the
     // eyebrow fix — this fails loudly if a future pass over-applies it.
     expect(screen.getByText('Points à discuter avec le médecin').className).toMatch(/uppercase/)
+  })
+})
+
+describe('Report side effects — denominator', () => {
+  it('counts side-effect days out of logged entries, not a hardcoded 14', () => {
+    const entries = recentEntries(5)
+    entries.slice(0, 3).forEach(e => { e.sideEffects.headache = true })
+    render(<Report entries={entries} cycle={cycle} onReset={vi.fn()} />)
+    expect(screen.queryByText(/3\/14/)).not.toBeInTheDocument()
+    expect(screen.getAllByText(/3\/5 saisies/).length).toBeGreaterThan(0)
+    expect(screen.getByText(/3\/5 saisies \(60%\)/)).toBeInTheDocument()
+  })
+})
+
+describe('Report coverage sentence', () => {
+  const withWearOff = (timeLogged, wearOff) =>
+    recentEntries(3).map(e => ({ ...e, timeLogged, wearOff }))
+
+  it('says "au moins" when coverage never degrades', () => {
+    render(<Report entries={withWearOff('18:00', 'none')} cycle={cycle} onReset={vi.fn()} />)
+    expect(screen.getByText(/au moins/)).toHaveTextContent('au moins 12h')
+  })
+
+  it('says "moins de 3h" — short — when it degrades right away', () => {
+    render(<Report entries={withWearOff('09:00', 'strong')} cycle={cycle} onReset={vi.fn()} />)
+    const p = screen.getByText(/moins de/)
+    expect(p).toHaveTextContent('moins de 3h')
+    expect(p).toHaveTextContent('Durée courte')
+  })
+
+  it('says "jusqu\'à" when it degrades later', () => {
+    render(<Report entries={recentEntries(3)} cycle={cycle} onReset={vi.fn()} />) // mild at 8h
+    expect(screen.getByText(/jusqu'à/)).toHaveTextContent("jusqu'à environ 6h")
+  })
+})
+
+describe('Report — no leftover 14-day hardcoding', () => {
+  const fr = (key) => new Date(key + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  it('the side-effect subtitle no longer claims a count "sur 14"', () => {
+    render(<Report entries={recentEntries(5)} cycle={cycle} onReset={vi.fn()} />)
+    expect(screen.queryByText(/sur 14/)).not.toBeInTheDocument()
+  })
+
+  it('the narrative period starts at the report window, not at an older cycle start', () => {
+    // cycle.cycleStartDate (2026-07-10) is far older than 14 days.
+    render(<Report entries={recentEntries(5)} cycle={cycle} onReset={vi.fn()} />)
+    const windowStart = buildDayWindow(cycle.cycleStartDate)[0]
+    expect(screen.getByText(new RegExp(`${fr(windowStart)} →`))).toBeInTheDocument()
+    expect(screen.queryByText(new RegExp(fr(cycle.cycleStartDate)))).not.toBeInTheDocument()
   })
 })
