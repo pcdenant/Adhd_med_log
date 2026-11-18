@@ -73,3 +73,11 @@ Four wrong numbers, each fixed with a test that failed first. Today's date used 
 ## [#18](https://github.com/pcdenant/Adhd_med_log/pull/18) — 2026-11-18 — Report: fix two wrong claims (wear-off label, weekly pattern)
 
 Two wrong claims from the Unslopovich mock-up diagnostic. The wear-off label called an average of 2.0 "Essoufflement fort" although 2 means "Léger" on the axis; label and icon now round to the nearest axis point, like the tooltip. The weekly pattern said a weekday was "systématiquement le jour le plus difficile" from a single entry; a weekday now needs at least 2 entries, and the text reads "le jour le plus difficile sur la période (… sur N saisies)".
+
+## [#19](https://github.com/pcdenant/Adhd_med_log/pull/19) — 2026-11-18 — Changelog: add entries for #6 to #18
+
+Caught this file up: it stopped at [#5](https://github.com/pcdenant/Adhd_med_log/pull/5). One entry per merged PR from [#6](https://github.com/pcdenant/Adhd_med_log/pull/6) to [#18](https://github.com/pcdenant/Adhd_med_log/pull/18), sourced from each PR's description and merge date. #14 was skipped because it was still open.
+
+## [#21](https://github.com/pcdenant/Adhd_med_log/pull/21) — 2026-11-18 — Onboarding: required fields and a real cycle start date
+
+Closes [#20](https://github.com/pcdenant/Adhd_med_log/issues/20). Medication and dosage are now required: an empty or spaces-only field shows an error next to it and nothing is stored, so "Non spécifié" can no longer reach the report. New "Premier jour du suivi" choice (Aujourd'hui, Hier, or a date up to 13 days back): past days appear as "à compléter" in the day strip right away. `setupCycle` re-checks the date with `isValidCycleStart` and falls back to today; the 13-day rule is one shared constant (`MAX_DAYS_BACK`) also used by `buildDayWindow`. The screen shows a portée preview that follows the chosen start day, and fields are 16px+ (no iOS zoom), with readable helper text, a 3px focus ring and 44px+ targets. No schema change: `cycleStartDate` already existed, it can now be in the past.
