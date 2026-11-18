@@ -77,13 +77,15 @@ function WearOffSection({ entries }) {
 
   // Colour is never the only signal here (design.md -> "never colour
   // alone"): each bucket also gets a distinct icon and its own text label.
+  // Label = nearest point on the 1/2/3 axis (same rounding as the tooltip),
+  // so an average of 2.0 reads "léger", like the axis it sits on.
   const iconFor = (v) => {
-    if (v <= 1.2) return <CheckCircleIcon className="w-3.5 h-3.5 text-[#2F6B44] flex-shrink-0" aria-hidden="true" />
-    return <AlertTriangleIcon className={`w-3.5 h-3.5 flex-shrink-0 ${v <= 1.9 ? 'text-[#6B5814]' : 'text-[#9C3C3D]'}`} aria-hidden="true" />
+    if (Math.round(v) <= 1) return <CheckCircleIcon className="w-3.5 h-3.5 text-[#2F6B44] flex-shrink-0" aria-hidden="true" />
+    return <AlertTriangleIcon className={`w-3.5 h-3.5 flex-shrink-0 ${Math.round(v) === 2 ? 'text-[#6B5814]' : 'text-[#9C3C3D]'}`} aria-hidden="true" />
   }
   const labelFor = (v) => {
-    if (v <= 1.2) return 'Pleinement actif'
-    if (v <= 1.9) return 'Essoufflement léger'
+    if (Math.round(v) <= 1) return 'Pleinement actif'
+    if (Math.round(v) === 2) return 'Essoufflement léger'
     return 'Essoufflement fort'
   }
 
@@ -348,7 +350,8 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
 
   // European order, filter to days with data
   const orderedDays = [1, 2, 3, 4, 5, 6, 0].map(i => dayPattern[i])
-  const withDayData = orderedDays.filter(d => d.avg != null && d.count > 0)
+  // A weekday seen once is one bad day, not a pattern: need it at least twice.
+  const withDayData = orderedDays.filter(d => d.avg != null && d.count >= 2)
   const hardestDay =
     withDayData.length > 0
       ? withDayData.reduce((a, b) => (a.avg ?? 5) < (b.avg ?? 5) ? a : b)
@@ -434,9 +437,10 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
           title="Pattern hebdomadaire"
           content={
             <p>
-              Le <strong>{hardestDay.fullLabel}</strong> est systématiquement le jour le plus
-              difficile (moy.{' '}
-              <span className="font-mono">{hardestDay.avg?.toFixed(1)}/5</span>). À mentionner au
+              Le <strong>{hardestDay.fullLabel}</strong> est le jour le plus difficile sur la
+              période (moy.{' '}
+              <span className="font-mono">{hardestDay.avg?.toFixed(1)}/5</span> sur{' '}
+              <span className="font-mono">{hardestDay.count}</span> saisies). À mentionner au
               médecin.
             </p>
           }
