@@ -26,6 +26,16 @@ function tenRecentEntries() {
   return entries
 }
 
+// The three required answers (time -> six ratings -> wear-off); auto-advance
+// opens each next section.
+async function answerRequired(page, time) {
+  await page.getByLabel('Heure de prise du médicament').fill(time)
+  for (const group of await page.getByRole('group', { name: /Je / }).all()) {
+    await group.getByRole('button', { name: 'Niveau 3 sur 5' }).click()
+  }
+  await page.getByRole('radio', { name: /Aucun — médicament/ }).check()
+}
+
 test('golden journey 1: onboarding then log the first daily check-in', async ({ page }) => {
   await page.goto('/')
 
@@ -34,10 +44,10 @@ test('golden journey 1: onboarding then log the first daily check-in', async ({ 
   await page.getByLabel('Dosage').fill('36mg')
   await page.getByRole('button', { name: /Commencer le suivi/ }).click()
 
-  // Now on the tracker: fill the required dose time and save.
+  // Now on the tracker: answer the three required sections and save.
   await expect(page.getByRole('button', { name: 'Saisie du jour', exact: true })).toBeVisible()
-  await page.getByLabel('Heure de prise du médicament').fill('08:30')
-  await page.getByRole('button', { name: /Enregistrer la saisie du jour/ }).click()
+  await answerRequired(page, '08:30')
+  await page.getByRole('button', { name: /^Enregistrer le / }).click()
 
   await expect(page.getByText('Saisie du jour enregistrée')).toBeVisible()
 })
@@ -52,11 +62,11 @@ test('golden journey 3: backfill a missed past day from the 14-day strip', async
   })
   await page.goto('/')
 
-  // Jump to the first day still to complete, fill the required dose time, save.
+  // Jump to the first day still to complete, answer the required sections, save.
   await page.getByRole('button', { name: /à compléter/ }).first().click()
   await expect(page.getByText(/Vous complétez/)).toBeVisible()
-  await page.getByLabel('Heure de prise du médicament').fill('08:00')
-  await page.getByRole('button', { name: /Enregistrer cette journée/ }).click()
+  await answerRequired(page, '08:00')
+  await page.getByRole('button', { name: /^Enregistrer le / }).click()
 
   await expect(page.getByText('Journée déjà saisie')).toBeVisible()
 })

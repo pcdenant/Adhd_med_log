@@ -17,7 +17,7 @@ function fullDate(key) {
 
 function cellClasses(isSelected, logged, isToday) {
   const base =
-    'rounded-xl py-2 min-h-[44px] text-center transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1'
+    'rounded-xl py-2 min-h-[44px] text-center transition-colors focus:outline-none focus-visible:ring-[3px] focus-visible:ring-primary focus-visible:ring-offset-2'
   if (isSelected) return `${base} bg-primary text-white ring-2 ring-primary ring-offset-1`
   const today = isToday ? ' ring-1 ring-primary' : ''
   if (logged) return `${base} bg-primary-light text-primary-dark hover:bg-primary-light/70${today}`

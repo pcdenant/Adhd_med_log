@@ -1,13 +1,17 @@
 import { useRef, useState } from 'react'
 import { PillIcon } from './icons.jsx'
+import Portee from './Portee.jsx'
 import {
   getTodayKey,
   cycleStartBounds,
   daysBefore,
   isValidCycleStart,
   shiftKey,
+  buildDayWindow,
   MAX_DAYS_BACK,
 } from '../utils/calculations.js'
+
+const NO_DATES = new Set()
 
 const START_CHOICES = [
   { key: 'today', label: "Aujourd'hui" },
@@ -81,32 +85,14 @@ export default function Onboarding({ onSetup }) {
           </p>
         </div>
 
-        {/* Portée preview: one stroke per day of the 14-day window. Nothing is
-            logged yet, so only "à compléter" (dashed), today (outlined) and
-            days to come (faint). */}
+        {/* Portée preview: nothing is logged yet, so only "à compléter" (dashed),
+            today (outlined) and days to come (faint). */}
         <div className="bg-bg rounded-xl p-4 mb-6">
-          <div
-            role="img"
-            aria-label={
-              daysBack > 0
-                ? `14 jours : ${daysBack} à compléter, aujourd'hui, puis ${13 - daysBack} à venir`
-                : "14 jours : aujourd'hui, puis 13 à venir"
-            }
-            className="grid grid-cols-[repeat(14,minmax(0,1fr))] gap-1"
-          >
-            {Array.from({ length: 14 }, (_, i) => (
-              <span
-                key={i}
-                className={`h-2 rounded ${
-                  i < daysBack
-                    ? 'border-[1.5px] border-dashed border-primary'
-                    : i === daysBack
-                      ? 'border-2 border-primary'
-                      : 'bg-primary-light'
-                }`}
-              />
-            ))}
-          </div>
+          <Portee
+            days={buildDayWindow(daysBack > 0 ? startDate : today, today)}
+            completeDates={NO_DATES}
+            todayKey={today}
+          />
           <p className="text-sm text-muted mt-2">
             Un trait par jour. Il se remplit à chaque saisie.
             {daysBack > 0 &&

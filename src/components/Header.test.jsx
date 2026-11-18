@@ -11,7 +11,26 @@ describe('Header', () => {
     const banner = screen.getByRole('banner')
     expect(banner).toHaveTextContent('Concerta')
     expect(banner).toHaveTextContent('36mg')
-    expect(banner).toHaveTextContent('/14')
+    expect(banner).toHaveTextContent('0 sur 14 jours')
+  })
+
+  it('draws the portée with a text alternative counting complete entries only', () => {
+    vi.setSystemTime(new Date('2026-07-18T15:00:00'))
+    const full = {
+      timeTaken: '08:00',
+      dimensions: { focus: 3, taskInitiation: 3, emotionalRegulation: 3, impulseControl: 3, workingMemory: 3, timeAwareness: 3 },
+      wearOff: 'none',
+    }
+    const entries = [
+      { ...full, date: '2026-07-16' },
+      { date: '2026-07-17', timeTaken: '08:00', dimensions: {} }, // older, incomplete
+    ]
+    render(<Header cycle={{ ...cycle, cycleStartDate: '2026-07-15' }} entries={entries} onUpdateCycle={vi.fn()} />)
+    expect(screen.getByRole('img', {
+      name: "1 jour saisi sur 14, 2 à compléter, aujourd'hui à saisir, 10 à venir",
+    })).toBeInTheDocument()
+    expect(screen.getByRole('banner')).toHaveTextContent('1 sur 14 jours')
+    vi.useRealTimers()
   })
 
   it('edits medication and dosage inline and reports trimmed values', async () => {

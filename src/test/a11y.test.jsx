@@ -25,4 +25,11 @@ describe('accessibility (non-regression)', () => {
     const { container } = render(<DailyCheckIn entries={[]} onSave={vi.fn()} />)
     expect(await axe(container)).toHaveNoViolations()
   })
+
+  it('daily check-in has no axe violations with the missing-answers state shown', async () => {
+    const { container } = render(<DailyCheckIn entries={[]} onSave={vi.fn()} />)
+    await userEvent.click(screen.getByRole('button', { name: /^Enregistrer le / }))
+    expect(screen.getByRole('status')).toHaveTextContent(/Encore 3 réponses/)
+    expect(await axe(container)).toHaveNoViolations()
+  })
 })

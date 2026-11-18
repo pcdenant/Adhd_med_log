@@ -18,7 +18,7 @@ export default function LikertScale({ value, onChange, label, question, lowLabel
             aria-pressed={value === level.value}
             aria-label={`Niveau ${level.value} sur 5`}
             onClick={() => onChange(level.value)}
-            className={`flex-1 py-2.5 rounded-lg border-2 font-mono font-bold text-sm transition-all ${
+            className={`flex-1 py-2.5 rounded-lg border-2 font-mono font-bold text-sm transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-[3px] focus-visible:ring-primary focus-visible:ring-offset-2 ${
               value === level.value ? level.active : level.inactive
             }`}
           >
