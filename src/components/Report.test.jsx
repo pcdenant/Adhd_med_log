@@ -166,3 +166,37 @@ describe('Report — no leftover 14-day hardcoding', () => {
     expect(screen.queryByText(new RegExp(fr(cycle.cycleStartDate)))).not.toBeInTheDocument()
   })
 })
+
+describe('Report wear-off label — matches the 1/2/3 axis', () => {
+  it('labels an average of 2.0 as "léger", not "fort"', () => {
+    // All 'mild' (= 2 on the axis) at 8h → bucket average is exactly 2.0.
+    render(<Report entries={recentEntries(3)} cycle={cycle} onReset={vi.fn()} />)
+    expect(screen.getByText('Essoufflement léger')).toBeInTheDocument()
+    expect(screen.queryByText('Essoufflement fort')).not.toBeInTheDocument()
+  })
+})
+
+describe('Report weekly pattern — no claim from a single day', () => {
+  const lowDay = (entries, dow) =>
+    entries.forEach(e => {
+      if (new Date(e.date + 'T12:00:00').getDay() === dow) {
+        Object.keys(e.dimensions).forEach(k => { e.dimensions[k] = 1 })
+      }
+    })
+
+  it('hides the pattern when the hardest weekday was logged only once', () => {
+    const entries = recentEntries(7)
+    lowDay(entries, new Date(entries[0].date + 'T12:00:00').getDay())
+    render(<Report entries={entries} cycle={cycle} onReset={vi.fn()} />)
+    expect(screen.queryByText('Pattern hebdomadaire')).not.toBeInTheDocument()
+  })
+
+  it('shows it once the weekday repeats, without "systématiquement"', () => {
+    const entries = recentEntries(14)
+    lowDay(entries, new Date(entries[0].date + 'T12:00:00').getDay())
+    render(<Report entries={entries} cycle={cycle} onReset={vi.fn()} />)
+    expect(screen.getByText('Pattern hebdomadaire')).toBeInTheDocument()
+    expect(screen.queryByText(/systématiquement/)).not.toBeInTheDocument()
+    expect(screen.getByText(/le jour le plus difficile/)).toHaveTextContent('sur 2 saisies')
+  })
+})
