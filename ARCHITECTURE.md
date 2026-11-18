@@ -22,7 +22,7 @@ App.jsx (owns all state: { cycle, entries })
   │    the key); a failed write sets saveError (renders a dismissible SaveErrorBanner) but still
   │    keeps the in-memory change — no rollback, no export, just an honest warning.
   │
-  ├─ Onboarding.jsx     — shown when cycle is null; collects medicationName + dosage, calls setupCycle()
+  ├─ Onboarding.jsx     — shown when cycle is null; collects medicationName + dosage (required) + cycle start (today…13 days back), calls setupCycle(), which re-checks the date with isValidCycleStart()
   │
   ├─ Header.jsx          — always visible once a cycle exists; inline-editable med/dosage,
   │                         14-day entry counter (reads entries via calculations.js)

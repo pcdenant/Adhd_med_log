@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App.jsx'
+import { getTodayKey, shiftKey } from './utils/calculations.js'
 
 const STORAGE_KEY = 'ammt_v2'
 
@@ -98,5 +99,89 @@ describe('App — save failures', () => {
     render(<App />)
     await completeOnboarding()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+})
+
+describe('Onboarding — required fields and cycle start (issue #20)', () => {
+  const stored = () => JSON.parse(localStorage.getItem(STORAGE_KEY))
+  const fillFields = async (med = 'Concerta', dose = '36mg') => {
+    if (med) await userEvent.type(screen.getByLabelText('Nom du médicament'), med)
+    if (dose) await userEvent.type(screen.getByLabelText('Dosage'), dose)
+  }
+  const submit = () => userEvent.click(screen.getByRole('button', { name: 'Commencer le suivi' }))
+
+  it('blocks empty fields, says which one, and stores nothing', async () => {
+    render(<App />)
+    await submit()
+    expect(screen.getByText('Indiquez le nom du médicament.')).toBeInTheDocument()
+    expect(screen.getByText('Indiquez le dosage.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Nom du médicament')).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText('Nom du médicament')).toHaveFocus()
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
+  })
+
+  it('treats a whitespace-only field as empty', async () => {
+    render(<App />)
+    await fillFields('Concerta', '   ')
+    await submit()
+    expect(screen.getByText('Indiquez le dosage.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Dosage')).toHaveFocus()
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
+  })
+
+  it('never stores "Non spécifié"', async () => {
+    render(<App />)
+    await submit()
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
+  })
+
+  it('starts the cycle today by default', async () => {
+    render(<App />)
+    await fillFields()
+    await submit()
+    expect(stored().cycle.cycleStartDate).toBe(getTodayKey())
+    expect(screen.queryByRole('button', { name: /à compléter$/ })).not.toBeInTheDocument()
+  })
+
+  it('"Hier" starts the cycle yesterday, with yesterday to complete', async () => {
+    render(<App />)
+    await fillFields()
+    await userEvent.click(screen.getByRole('button', { name: 'Hier' }))
+    await submit()
+    expect(stored().cycle.cycleStartDate).toBe(shiftKey(getTodayKey(), -1))
+    expect(screen.getAllByRole('button', { name: /à compléter$/ })).toHaveLength(1)
+  })
+
+  it('"Autre jour" 5 days back gives 5 days to complete and the right header date', async () => {
+    const start = shiftKey(getTodayKey(), -5)
+    render(<App />)
+    await fillFields()
+    await userEvent.click(screen.getByRole('button', { name: 'Autre jour' }))
+    fireEvent.change(screen.getByLabelText(/Date de début/), { target: { value: start } })
+    expect(screen.getByRole('img', { name: /5 à compléter/ })).toBeInTheDocument()
+    await submit()
+    expect(stored().cycle.cycleStartDate).toBe(start)
+    expect(screen.getAllByRole('button', { name: /à compléter$/ })).toHaveLength(5)
+    const fr = new Date(start + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
+    expect(screen.getByRole('banner')).toHaveTextContent(fr)
+  })
+
+  it('refuses a start date more than 13 days back, and stores nothing', async () => {
+    render(<App />)
+    await fillFields()
+    await userEvent.click(screen.getByRole('button', { name: 'Autre jour' }))
+    fireEvent.change(screen.getByLabelText(/Date de début/), { target: { value: shiftKey(getTodayKey(), -14) } })
+    await submit()
+    expect(screen.getByText(/Choisissez une date entre le/)).toBeInTheDocument()
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
+  })
+
+  it('refuses "Autre jour" with no date picked', async () => {
+    render(<App />)
+    await fillFields()
+    await userEvent.click(screen.getByRole('button', { name: 'Autre jour' }))
+    await submit()
+    expect(screen.getByLabelText(/Date de début/)).toHaveFocus()
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
   })
 })
