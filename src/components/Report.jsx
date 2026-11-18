@@ -18,6 +18,7 @@ import {
   calculateSideEffectFrequency,
   calculateNotesTimeline,
   estimateCoverageHours,
+  getTodayKey,
 } from '../utils/calculations.js'
 import { hexForLevel, tintForLevel } from '../utils/severityColors.js'
 import {
@@ -357,7 +358,7 @@ function NarrativeSection({ cycle, entries, dimAvgs, wearOffData, sideEffects, d
         </p>
         <p className="text-xs text-gray-500 mt-0.5">
           {entries.length} saisie{entries.length > 1 ? 's' : ''} ·{' '}
-          {formatDate(cycle.cycleStartDate)} → {formatDate(new Date().toISOString().split('T')[0])}
+          {formatDate(cycle.cycleStartDate)} → {formatDate(getTodayKey())}
         </p>
       </div>
 

@@ -1,6 +1,10 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
+// Run tests in the real user's timezone (Montréal) so local-vs-UTC date bugs
+// show up here instead of only after 19h in production.
+process.env.TZ = 'America/Toronto'
+
 export default defineConfig({
   plugins: [react()],
   test: {

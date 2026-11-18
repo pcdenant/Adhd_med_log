@@ -58,10 +58,13 @@ export const SIDE_EFFECTS = [
 export const DAYS_SHORT = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
 export const DAYS_FULL = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
 
-// Today's entry key (YYYY-MM-DD). Kept here so the daily form and the
-// missing-day window agree on what "today" is.
+// Today's entry key (YYYY-MM-DD) in the user's LOCAL timezone. Kept here so
+// the daily form and the missing-day window agree on what "today" is.
+// Not toISOString(): that's UTC, which in Montréal flips to tomorrow after 19h.
 export function getTodayKey() {
-  return new Date().toISOString().split('T')[0]
+  const d = new Date()
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
 // Shift a YYYY-MM-DD key by whole days, anchored at UTC noon so the result is

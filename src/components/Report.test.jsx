@@ -12,7 +12,7 @@ function recentEntries(n) {
     const d = new Date()
     d.setDate(d.getDate() - i)
     out.push({
-      date: d.toISOString().split('T')[0],
+      date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, // local key, like getTodayKey
       timeTaken: '08:00',
       timeLogged: '16:00',
       dimensions: { focus: 3, taskInitiation: 3, emotionalRegulation: 3, impulseControl: 3, workingMemory: 3, timeAwareness: 3 },

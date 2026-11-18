@@ -68,8 +68,16 @@ describe('domain constants', () => {
 })
 
 describe('getTodayKey', () => {
+  afterEach(() => vi.useRealTimers())
+
   it('returns an ISO YYYY-MM-DD date key', () => {
     expect(getTodayKey()).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  it('uses the local date, not UTC, in the evening', () => {
+    // 20:30 in Montréal on July 18 is already July 19 in UTC.
+    vi.setSystemTime(new Date(2026, 6, 18, 20, 30))
+    expect(getTodayKey()).toBe('2026-07-18')
   })
 })
 
