@@ -55,7 +55,7 @@ Before this tool, P-C had no systematic way to evaluate whether his established 
 
 ### Core requirements (as shipped)
 
-**Setup (once per cycle):** medication name, dosage, cycle start date — shown persistently in the header, editable inline.
+**Setup (once per cycle):** medication name and dosage (both required — no "Non spécifié" placeholder reaches the report), and the cycle's first day: today, yesterday, or any day up to 13 days back, so days already lived can be backfilled right away. Medication and dosage are shown persistently in the header, editable inline.
 
 **Daily check-in (`src/components/DailyCheckIn.jsx`, < 3 min):**
 - Time medication was taken (HH:MM)

@@ -69,17 +69,40 @@ export function getTodayKey() {
 
 // Shift a YYYY-MM-DD key by whole days, anchored at UTC noon so the result is
 // timezone-independent and never lands on a DST edge.
-function shiftKey(key, delta) {
+export function shiftKey(key, delta) {
   const d = new Date(key + 'T12:00:00Z')
   d.setUTCDate(d.getUTCDate() + delta)
   return d.toISOString().split('T')[0]
+}
+
+// The window is today plus this many days back (= 14 days). Shared by the day
+// window and by onboarding's start-date limits so the two can't drift apart.
+export const MAX_DAYS_BACK = 13
+
+// Allowed cycle start dates at onboarding: today back to today - MAX_DAYS_BACK.
+export function cycleStartBounds(todayKey = getTodayKey()) {
+  return { min: shiftKey(todayKey, -MAX_DAYS_BACK), max: todayKey }
+}
+
+// Whole days from `key` to `todayKey` (0 = today). Both are YYYY-MM-DD.
+export function daysBefore(key, todayKey = getTodayKey()) {
+  return Math.round((new Date(todayKey + 'T12:00:00Z') - new Date(key + 'T12:00:00Z')) / 86400000)
+}
+
+// A start date the cycle may use: a real YYYY-MM-DD inside cycleStartBounds.
+export function isValidCycleStart(key, todayKey = getTodayKey()) {
+  if (typeof key !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(key)) return false
+  if (Number.isNaN(new Date(key + 'T12:00:00Z').getTime())) return false // e.g. 2026-13-45
+  if (shiftKey(key, 0) !== key) return false // e.g. 2026-02-31 rolls into March
+  const { min, max } = cycleStartBounds(todayKey)
+  return key >= min && key <= max
 }
 
 // Ascending list of date keys for the report window: `today` back to
 // max(cycleStartDate, today - 13), capped at 14 days and never in the future.
 // This is the set of days the user is allowed to log or backfill.
 export function buildDayWindow(cycleStartDate, todayKey = getTodayKey()) {
-  let start = shiftKey(todayKey, -13)
+  let start = shiftKey(todayKey, -MAX_DAYS_BACK)
   if (cycleStartDate && cycleStartDate > start) start = cycleStartDate
   if (start > todayKey) start = todayKey
   const keys = []

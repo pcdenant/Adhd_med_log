@@ -4,7 +4,7 @@ import DailyCheckIn from './components/DailyCheckIn.jsx'
 import Report from './components/Report.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import { AlertTriangleIcon, XIcon } from './components/icons.jsx'
-import { getTodayKey } from './utils/calculations.js'
+import { getTodayKey, isValidCycleStart } from './utils/calculations.js'
 
 const STORAGE_KEY = 'ammt_v2'
 
@@ -50,12 +50,14 @@ export default function App() {
     setSaveError(!persistData(newData))
   }
 
-  const setupCycle = (medicationName, dosage) => {
+  const setupCycle = (medicationName, dosage, cycleStartDate) => {
+    // Onboarding already limits the date; this is the guarantee (trust boundary).
+    const today = getTodayKey()
     persist({
       cycle: {
         medicationName,
         dosage,
-        cycleStartDate: getTodayKey(),
+        cycleStartDate: isValidCycleStart(cycleStartDate, today) ? cycleStartDate : today,
         createdAt: new Date().toISOString(),
       },
       entries: [],

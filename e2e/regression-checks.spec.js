@@ -88,3 +88,21 @@ test('day-of-week heatmap has no horizontal overflow at 360px and stays at 7 col
   const cellCount = await page.locator('.grid-cols-7 > div').count()
   expect(cellCount).toBe(7)
 })
+
+test('onboarding controls are 44px+ and fields are 16px+ (no iOS zoom on focus)', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Autre jour' }).click()
+
+  for (const name of ["Aujourd'hui", 'Hier', 'Autre jour', 'Commencer le suivi']) {
+    const box = await page.getByRole('button', { name, exact: true }).boundingBox()
+    expect(box.height, name).toBeGreaterThanOrEqual(44)
+  }
+  for (const label of ['Nom du médicament', 'Dosage', /Date de début/]) {
+    const field = page.getByLabel(label)
+    expect((await field.boundingBox()).height).toBeGreaterThanOrEqual(44)
+    const size = await field.evaluate(el => parseFloat(getComputedStyle(el).fontSize))
+    expect(size).toBeGreaterThanOrEqual(16)
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390)
+})
